@@ -5,7 +5,6 @@ namespace App\Enums;
 enum RoofDirection: string
 {
     case Norte = 'Norte';
-    case Nordeste = 'Nordeste';
     case Leste = 'Leste';
     case Oeste = 'Oeste';
     case Sul = 'Sul';
