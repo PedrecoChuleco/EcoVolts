@@ -109,9 +109,10 @@
         </div>
 
         <div class="form-actions">
-          <label class="btn btn-primary" for="s-login">Criar conta</label>
+          <button type="button" class="btn btn-primary" id="btn-cadastrar">Criar conta</button>
           <span class="form-note">Depois de cadastrar, você fará login com este e-mail e senha.</span>
         </div>
+        <p class="form-error" id="cadastro-erro"></p>
       </div>
     </section>
 
@@ -128,15 +129,16 @@
         </div>
 
         <div class="form-actions">
-          <label class="btn btn-primary" for="s-menu">Entrar</label>
+          <button type="button" class="btn btn-primary" id="btn-entrar">Entrar</button>
           <span class="form-note">Esqueceu a senha?</span>
         </div>
+        <p class="form-error" id="login-erro"></p>
       </div>
     </section>
 
     <!-- 03 · MENU -->
     <section class="panel panel-menu">
-      <div class="eyebrow-row"><span class="roof-tick"></span> Bem-vinda, Maria</div>
+      <div class="eyebrow-row"><span class="roof-tick"></span> <span id="menu-saudacao">Bem-vinda</span></div>
       <h1 class="panel-title">O que você quer fazer?</h1>
       <p class="panel-sub">Escolha uma opção para continuar.</p>
 
@@ -157,7 +159,7 @@
           <span aria-hidden="true">→</span>
         </label>
 
-        <label class="menu-card exit" for="s-landing">
+        <label class="menu-card exit" for="s-landing" id="btn-sair">
           <div class="menu-card-text">
             <h3>Sair</h3>
             <p>Encerrar a sessão e voltar para o início.</p>
@@ -175,11 +177,11 @@
 
       <div class="card">
         <dl class="info-list">
-          <div><dt>Nome</dt><dd>Maria Souza</dd></div>
-          <div><dt>CPF</dt><dd>123.456.789-00</dd></div>
-          <div><dt>Telefone</dt><dd>(15) 99876-5432</dd></div>
-          <div><dt>CEP</dt><dd>18035-410</dd></div>
-          <div class="full"><dt>Endereço</dt><dd>Rua das Acácias, 120 — Jardim das Flores, Sorocaba</dd></div>
+          <div><dt>Nome</dt><dd id="perfil-nome">—</dd></div>
+          <div><dt>CPF</dt><dd id="perfil-cpf">—</dd></div>
+          <div><dt>Telefone</dt><dd id="perfil-telefone">—</dd></div>
+          <div><dt>CEP</dt><dd id="perfil-cep">—</dd></div>
+          <div class="full"><dt>Endereço</dt><dd id="perfil-endereco">—</dd></div>
         </dl>
 
         <div class="form-actions">
@@ -255,8 +257,8 @@
       <div class="report">
         <div class="report-head">
           <div>
-            <h3>Maria Souza</h3>
-            <p>Rua das Acácias, 120 — Jardim das Flores, Sorocaba</p>
+            <h3 id="relatorio-nome">—</h3>
+            <p id="relatorio-endereco">—</p>
           </div>
           <div class="report-panels" aria-hidden="true"></div>
         </div>
@@ -280,5 +282,6 @@
   </main>
 </div>
 
+<script src="script.js"></script>
 </body>
 </html>

@@ -350,6 +350,19 @@ main.content{
 
 .form-note{ font-size: 13px; color: var(--muted); }
 
+.form-error{
+  display: none;
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  color: var(--danger);
+}
+.form-error.is-visible{ display: block; }
+
+button.btn{
+  font: inherit;
+  font-family: var(--sans);
+}
+
 /* ---------- toggle chips (Sim / Não) ---------- */
 .field-toggle{
   grid-column: 1 / -1;
