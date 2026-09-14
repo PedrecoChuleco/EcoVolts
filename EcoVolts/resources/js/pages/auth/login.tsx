@@ -3,11 +3,13 @@ import TextLink from '@/components/text-link';
 import EcoVoltsLayout, { EcoButton, EcoCard, EcoField, ecoInputClass, PanelHeading } from '@/layouts/ecovolts-layout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import { type FormDataConvertible } from '@inertiajs/core';
 
 interface LoginForm {
     email: string;
     password: string;
     remember: boolean;
+    [key: string]: FormDataConvertible;
 }
 
 interface LoginProps {
@@ -32,9 +34,12 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     return (
         <EcoVoltsLayout variant="guest">
             <Head title="Login" />
-            <PanelHeading eyebrow="Passo 2 de 2" title="Entrar na conta" subtitle="Use o e-mail e a senha definidos no cadastro para acessar o painel." />
+            <PanelHeading 
+                eyebrow="Passo 2 de 2" 
+                title="Entrar na conta"
+            />
 
-            <EcoCard className="max-w-[420px]">
+            <EcoCard>
                 {status && <div className="mb-4 text-sm font-medium text-eco-green">{status}</div>}
                 <form onSubmit={submit}>
                     <div className="grid grid-cols-1 gap-[18px]">

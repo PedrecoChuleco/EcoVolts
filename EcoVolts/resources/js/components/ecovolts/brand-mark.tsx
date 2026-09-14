@@ -1,13 +1,15 @@
 import { cn } from '@/lib/utils';
+import logo from '@/assets/brand-small.png'
 
 export function BrandMark({ className }: { className?: string }) {
     return (
         <div
             aria-hidden
-            className={cn('size-[30px] shrink-0 rounded-[4px] bg-eco-ink', className)}
+            className={cn('w-[55px] h-[48px] shrink-1', className)}
             style={{
-                backgroundImage:
-                    'repeating-linear-gradient(0deg, transparent 0 5px, rgba(232,163,61,0.55) 5px 6px), repeating-linear-gradient(90deg, transparent 0 5px, rgba(232,163,61,0.55) 5px 6px)',
+                backgroundImage: `url(${logo})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
             }}
         />
     );

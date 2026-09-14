@@ -6,20 +6,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+    font-family: 'Outfit';
+    src: url(..\fonts\Outfit-VariableFont_wght.ttf);
+    font-weight: normal;
+    font-style: normal;
+}
+
 @theme {
     --font-sans:
         'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-serif: 'Fraunces', Georgia, serif;
+    --font-outfit: 'Outfit', sans-serif;
 
-    --color-eco-bg: #eef3f0;
+    --color-eco-bg: #dedede;
     --color-eco-surface: #ffffff;
-    --color-eco-ink: #10262a;
-    --color-eco-amber: #e8a33d;
-    --color-eco-green: #2f6b4f;
-    --color-eco-muted: #5c6f6a;
+    --color-eco-ink: #212121;
+    --color-eco-dark: #111111;
+    --color-eco-amber: #FFDA21;
+    --color-eco-green: #404E44;
+    --color-eco-muted: #94A89A;
     --color-eco-line: #d8e1db;
     --color-eco-danger: #b5502f;
-    --color-eco-hint: #869b94;
+    --color-eco-hint: #616362;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);

@@ -1,7 +1,8 @@
 import InputError from '@/components/input-error';
 import EcoVoltsLayout, { EcoButton, EcoCard, EcoField, ecoInputClass, PanelHeading } from '@/layouts/ecovolts-layout';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
+import { InputMask } from '@react-input/mask';
 
 interface RegisterForm {
     name: string;
@@ -14,6 +15,7 @@ interface RegisterForm {
     email: string;
     password: string;
     password_confirmation: string;
+    [key: string]: string;
 }
 
 export default function Register() {
@@ -30,6 +32,39 @@ export default function Register() {
         password_confirmation: '',
     });
 
+    const [cepLoading, setCepLoading] = useState(false);
+    const [cepError, setCepError] = useState<string | null>(null);
+
+    async function handleCep(value: string) {
+        setData('cep', value);
+        setCepError(null);
+
+        const digits = value.replace(/\D/g, '');
+        if (digits.length !== 8) return;
+
+        setCepLoading(true);
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+            const address = await response.json();
+
+            if (address.erro) {
+                setCepError('CEP não encontrado');
+            } else {
+                setData((prevData) => ({
+                    ...prevData,
+                    cep: value,
+                    city: address.localidade || prevData.city,
+                    neighborhood: address.bairro || prevData.neighborhood,
+                    street: address.logradouro || prevData.street,
+                }));
+            }
+        } catch {
+            setCepError('Erro ao buscar CEP');
+        } finally {
+            setCepLoading(false);
+        }
+    }
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('register'), {
@@ -40,16 +75,12 @@ export default function Register() {
     return (
         <EcoVoltsLayout variant="guest">
             <Head title="Cadastro" />
-            <PanelHeading
-                eyebrow="Passo 1 de 2"
-                title="Cadastro do usuário"
-                subtitle="Preencha seus dados para gerar orçamentos de energia solar personalizados."
-            />
+            <PanelHeading eyebrow="Passo 1 de 2" title="Cadastro do usuário" />
 
             <EcoCard>
                 <form onSubmit={submit}>
                     <div className="grid grid-cols-1 gap-x-5 gap-y-[18px] md:grid-cols-2">
-                        <EcoField id="name" label="Nome de usuário">
+                        <EcoField id="name" label="Nome de usuário" full>
                             <input
                                 id="name"
                                 className={ecoInputClass}
@@ -63,38 +94,46 @@ export default function Register() {
                             <InputError message={errors.name} />
                         </EcoField>
                         <EcoField id="cpf" label="CPF">
-                            <input
+                            <InputMask
                                 id="cpf"
                                 className={ecoInputClass}
                                 value={data.cpf}
                                 onChange={(e) => setData('cpf', e.target.value)}
                                 placeholder="000.000.000-00"
+                                mask="___.___.___-__"
+                                replacement={{ _: /\d/ }}
                                 required
                             />
                             <InputError message={errors.cpf} />
                         </EcoField>
                         <EcoField id="phone" label="Telefone">
-                            <input
+                            <InputMask
                                 id="phone"
                                 className={ecoInputClass}
                                 value={data.phone}
                                 onChange={(e) => setData('phone', e.target.value)}
                                 autoComplete="tel"
                                 placeholder="(00) 00000-0000"
+                                mask="(__) _____-____"
+                                replacement={{ _: /\d/ }}
                                 required
                             />
                             <InputError message={errors.phone} />
                         </EcoField>
                         <EcoField id="cep" label="CEP">
-                            <input
+                            <InputMask
                                 id="cep"
                                 className={ecoInputClass}
                                 value={data.cep}
-                                onChange={(e) => setData('cep', e.target.value)}
+                                onChange={(e) => handleCep(e.target.value)}
                                 autoComplete="postal-code"
                                 placeholder="00000-000"
+                                mask="_____-___"
+                                replacement={{ _: /\d/ }}
                                 required
                             />
+                            {cepLoading && <span className="text-xs text-eco-muted">Buscando endereço...</span>}
+                            {cepError && <span className="text-xs text-red-500">{cepError}</span>}
                             <InputError message={errors.cep} />
                         </EcoField>
                         <EcoField id="city" label="Cidade">
@@ -109,7 +148,7 @@ export default function Register() {
                             />
                             <InputError message={errors.city} />
                         </EcoField>
-                        <EcoField id="neighborhood" label="Bairro">
+                        <EcoField id="neighborhood" label="Bairro" full>
                             <input
                                 id="neighborhood"
                                 className={ecoInputClass}
@@ -132,7 +171,7 @@ export default function Register() {
                             />
                             <InputError message={errors.street} />
                         </EcoField>
-                        <EcoField id="email" label="E-mail">
+                        <EcoField id="email" label="E-mail" full>
                             <input
                                 id="email"
                                 type="email"
@@ -145,7 +184,6 @@ export default function Register() {
                             />
                             <InputError message={errors.email} />
                         </EcoField>
-                        <div className="hidden md:block" />
                         <EcoField id="password" label="Senha">
                             <input
                                 id="password"

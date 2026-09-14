@@ -2,6 +2,9 @@ import { BrandMark, RoofTick } from '@/components/ecovolts/brand-mark';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
+import { useScrollOpacity } from '@/hooks/use-scroll-opacity';
+import authBanner from '@/assets/auth-banner.jpg';
+import Footer from '@/components/ecovolts/footer';
 
 type EcoVoltsLayoutProps = PropsWithChildren<{
     variant: 'landing' | 'guest' | 'account';
@@ -9,8 +12,8 @@ type EcoVoltsLayoutProps = PropsWithChildren<{
 
 function navClass(active: boolean) {
     return active
-        ? 'flex items-baseline gap-2 whitespace-nowrap rounded-t-md border-b-2 border-eco-amber px-3.5 py-2 text-sm font-semibold text-eco-ink'
-        : 'flex items-baseline gap-2 whitespace-nowrap rounded-t-md border-b-2 border-transparent px-3.5 py-2 text-sm text-eco-muted hover:text-eco-ink';
+        ? 'flex items-baseline gap-2 whitespace-nowrap rounded-t-md border-b-2 border-eco-amber px-3.5 py-2 text-sm font-semibold'
+        : 'flex items-baseline gap-2 whitespace-nowrap rounded-t-md border-b-2 border-transparent px-3.5 py-2 text-sm text-eco-muted hover:text-eco-hint';
 }
 
 function sidebarNavClass(active: boolean) {
@@ -23,69 +26,93 @@ export default function EcoVoltsLayout({ children, variant }: EcoVoltsLayoutProp
     const { auth } = usePage<SharedData>().props;
     const path = usePage().url;
     const showSidebar = variant === 'account';
+    const showImgGuest = variant ==='guest';
+    const headerOpacity = useScrollOpacity();
 
     return (
         <div className="min-h-screen bg-eco-bg font-sans text-eco-ink">
-            <header className="flex flex-wrap items-center justify-between gap-6 border-b border-eco-line bg-eco-surface px-5 py-4 md:px-10">
-                <Link href={route('home')} className="flex items-center gap-2.5">
-                    <BrandMark />
-                    <span className="font-serif text-lg font-semibold tracking-[0.2px]">
-                        Eco<span className="text-eco-amber">Volts</span>
-                    </span>
-                </Link>
+            <header className={`fixed top-0 left-0 z-50 ${showImgGuest ? 'w-full lg:w-1/2' : 'w-full'}`}>
+                <div
+                    className="absolute inset-0 bg-eco-dark/25 backdrop-blur-sm transition-opacity duration-150 ease-out"
+                    style={{ opacity: headerOpacity }}
+                    aria-hidden="true"
+                />
 
-                {!auth.user && (
-                    <nav className="flex gap-1 overflow-x-auto">
-                        <Link href={route('register')} className={navClass(path.startsWith('/register'))}>
-                            <span className="font-serif text-xs italic text-[#A9BDB5]">01</span> Cadastro
-                        </Link>
-                        <Link href={route('login')} className={navClass(path.startsWith('/login'))}>
-                            <span className="font-serif text-xs italic text-[#A9BDB5]">02</span> Login
-                        </Link>
-                    </nav>
-                )}
+                <div className="relative flex flex-wrap items-center justify-between gap-6 px-5 py-4 md:px-10">
+                    <Link href={route('home')} className="flex items-center gap-2.5">
+                        <BrandMark />
+                        <span className="font-serif text-2xl font-semibold tracking-[0.2px]">
+                            <span className="text-eco-green">Eco</span><span className="text-eco-amber">Volts</span>
+                        </span>
+                    </Link>
+
+                    {!auth.user && (
+                        <nav className="flex gap-1 overflow-x-auto">
+                            <Link href={route('register')} className={navClass(path.startsWith('/register'))}>
+                                Cadastro
+                            </Link>
+                            <Link href={route('login')} className={navClass(path.startsWith('/login'))}>
+                                Login
+                            </Link>
+                        </nav>
+                    )}
+                </div>
             </header>
 
-            <div className={showSidebar ? 'grid min-h-[calc(100vh-65px)] grid-cols-1 md:grid-cols-[220px_1fr]' : 'grid min-h-[calc(100vh-65px)] grid-cols-1'}>
+            <div className={showSidebar ? 'grid min-h-screen grid-cols-1 md:grid-cols-[248px_1fr]' : 'grid min-h-[calc(100vh-65px)] grid-cols-1'}>
                 {showSidebar && (
-                    <aside className="flex flex-row items-center gap-6 overflow-x-auto bg-eco-ink px-5 py-4 text-[#EAF1EC] md:flex-col md:items-stretch md:gap-8 md:px-5 md:py-6">
+                    <aside className="flex flex-row items-center gap-6 overflow-x-auto bg-eco-ink px-5 text-eco-line md:flex-col md:items-stretch md:gap-8 md:px-5 md:py-6 md:pt-20">
                         <nav className="flex flex-row gap-0.5 md:flex-col">
                             <p className="mb-2.5 ml-0.5 hidden text-xs text-[#9FB4AE] md:block">Área da conta</p>
                             <Link href={route('dashboard')} className={sidebarNavClass(path.startsWith('/dashboard'))}>
-                                <span className="w-3.5 shrink-0 font-serif text-[13px] italic text-[#6F8880]">03</span> Menu
+                                Menu
                             </Link>
                             <Link href={route('perfil')} className={sidebarNavClass(path.startsWith('/perfil'))}>
-                                <span className="w-3.5 shrink-0 font-serif text-[13px] italic text-[#6F8880]">04</span> Perfil
+                                Perfil
                             </Link>
                             <Link href={route('orcamento')} className={sidebarNavClass(path.startsWith('/orcamento'))}>
-                                <span className="w-3.5 shrink-0 font-serif text-[13px] italic text-[#6F8880]">05</span> Orçamento
+                                Orçamento
                             </Link>
                             <Link href={route('relatorio')} className={sidebarNavClass(path.startsWith('/relatorio'))}>
-                                <span className="w-3.5 shrink-0 font-serif text-[13px] italic text-[#6F8880]">06</span> Relatório
+                                Relatório
                             </Link>
                         </nav>
-                        <p className="mt-auto hidden border-t border-white/10 pt-4 text-[12.5px] text-[#7E948D] md:block">
-                            Área liberada após o login. Calcule placas, investimento e payback a partir da sua conta de energia.
-                        </p>
                     </aside>
                 )}
 
-                <main className={variant === 'landing' ? 'max-w-none p-0' : 'max-w-[760px] px-[22px] py-[34px] pb-[60px] md:px-14 md:py-12 md:pb-20'}>
-                    {children}
-                </main>
+                {showImgGuest ? (
+                    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+                        <main className="flex min-h-screen flex-col justify-center px-6 pt-24 pb-12 md:px-14 lg:px-16">
+                            <div className="mx-auto w-full max-w-[600px]">
+                                {children}
+                            </div>
+                        </main>
+                        
+                        <div className="sticky top-0 hidden h-screen overflow-hidden bg-eco-dark lg:block">
+                            <img
+                                src={authBanner} 
+                                alt="EcoVolts Energia Solar"
+                                className="h-full w-full object-cover object-center"
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <main className={variant === 'landing' ? 'max-w-none p-0' : 'max-w-[760px] px-[22px] py-[34px] pb-[60px] md:px-14 md:py-12 md:pb-20'}>
+                        {children}
+                    </main>
+                )}
             </div>
         </div>
     );
 }
 
-export function PanelHeading({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle: string }) {
+export function PanelHeading({ eyebrow, title }: { eyebrow: string; title: string;}) {
     return (
         <>
-            <div className="mb-2.5 flex items-center gap-2.5 text-[13.5px] text-eco-muted">
+            <div className="mb-2.5 flex items-center gap-2.5 text-[13.5px] text-eco-muted mt-10">
                 <RoofTick /> {eyebrow}
             </div>
             <h1 className="mb-1.5 font-serif text-[34px] font-medium">{title}</h1>
-            <p className="mb-8 max-w-[52ch] text-[15px] text-eco-muted">{subtitle}</p>
         </>
     );
 }

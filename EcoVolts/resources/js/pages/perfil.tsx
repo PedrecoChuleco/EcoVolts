@@ -10,7 +10,10 @@ export default function Perfil() {
     return (
         <EcoVoltsLayout variant="account">
             <Head title="Perfil" />
-            <PanelHeading eyebrow="Meus dados" title="Informações do usuário" subtitle="Dados salvos no cadastro." />
+            <PanelHeading 
+                eyebrow="Meus dados" 
+                title="Informações do usuário"
+            />
 
             <EcoCard>
                 <dl className="grid grid-cols-1 gap-x-6 gap-y-[22px] md:grid-cols-2">

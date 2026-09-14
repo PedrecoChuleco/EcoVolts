@@ -2,6 +2,7 @@ import InputError from '@/components/input-error';
 import EcoVoltsLayout, { EcoButton, EcoCard, EcoField, ecoInputClass, PanelHeading } from '@/layouts/ecovolts-layout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import { type FormDataConvertible } from '@inertiajs/core';
 
 interface BudgetForm {
     bill_amount: string;
@@ -9,6 +10,7 @@ interface BudgetForm {
     roof_size_m2: string;
     knows_direction: boolean;
     roof_direction: string;
+    [key: string]: FormDataConvertible;
 }
 
 export default function Orcamento({ directions }: { directions: string[] }) {
@@ -19,6 +21,15 @@ export default function Orcamento({ directions }: { directions: string[] }) {
         knows_direction: true,
         roof_direction: directions[0] ?? 'Norte',
     });
+
+    function formatCurrency(rawValue: string) {
+        const digits = rawValue.replace(/\D/g, '');
+        const cents = parseInt(digits || '0', 10);
+        return (cents / 100).toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -31,7 +42,6 @@ export default function Orcamento({ directions }: { directions: string[] }) {
             <PanelHeading
                 eyebrow="Simulação"
                 title="Calcular orçamento"
-                subtitle="Quanto mais informações sobre o telhado, mais preciso é o resultado."
             />
 
             <EcoCard>
@@ -42,8 +52,9 @@ export default function Orcamento({ directions }: { directions: string[] }) {
                                 id="bill_amount"
                                 className={ecoInputClass}
                                 value={data.bill_amount}
-                                onChange={(e) => setData('bill_amount', e.target.value)}
+                                onChange={(e) => setData('bill_amount', formatCurrency(e.target.value))}
                                 placeholder="Ex: 380,00"
+                                inputMode="numeric"
                                 required
                             />
                             <InputError message={errors.bill_amount} />
@@ -53,8 +64,7 @@ export default function Orcamento({ directions }: { directions: string[] }) {
                             <span className="mb-2.5 block text-[14.5px] font-medium">Você sabe o tamanho do telhado?</span>
                             <button
                                 type="button"
-                                className={`mr-2 inline-block rounded-full border px-4 py-[7px] text-[13.5px] ${
-                                    data.knows_roof_size
+                                className={`mr-2 inline-block rounded-full border px-4 py-[7px] text-[13.5px] ${data.knows_roof_size
                                         ? 'border-eco-green bg-eco-green text-white'
                                         : 'border-eco-line text-eco-muted'
                                 }`}
