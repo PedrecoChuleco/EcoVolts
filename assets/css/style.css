@@ -1,0 +1,51 @@
+/* Small extras that go on top of the Tailwind CDN utility classes. */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+}
+
+/* "RoofTick" bullet used before eyebrow text, e.g. "Energia solar sob medida" */
+.roof-tick {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: rgba(231, 178, 75, 0.16);
+    color: #E7B24B;
+    flex-shrink: 0;
+}
+
+.roof-tick svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Lucide icons default to stroke width 2; keep them crisp at small sizes */
+[data-lucide] {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/*
+ * Use this on the CONTENT inside a section (text, cards, grids) — never on
+ * <main> or on a <section> itself. That way every section's background
+ * color and every full-bleed image still reaches the edge of the screen,
+ * and only the readable content gets inset from it.
+ */
+.inset {
+    padding-left: 6%;
+    padding-right: 6%;
+}
+
+@media (min-width: 768px) {
+    .inset {
+        padding-left: 10%;
+        padding-right: 10%;
+    }
+}
