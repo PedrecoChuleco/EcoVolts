@@ -10,6 +10,7 @@
  * the tags this file opens.
  */
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/auth-helpers.php';
 
 $variant   = $variant ?? 'landing';
 $pageTitle = $pageTitle ?? 'EcoVolts';
@@ -103,6 +104,27 @@ $pageTitle = $pageTitle ?? 'EcoVolts';
             <a href="<?= route('perfil') ?>" class="flex items-baseline gap-2.5 rounded-md border-l-2 px-2.5 py-2.5 text-[14.5px] <?= isActive('perfil') ? 'border-eco-amber bg-eco-amber/14 text-white' : 'border-transparent text-[#C7D8D1] hover:bg-white/5 hover:text-white' ?>">Perfil</a>
             <a href="<?= route('orcamento') ?>" class="flex items-baseline gap-2.5 rounded-md border-l-2 px-2.5 py-2.5 text-[14.5px] <?= isActive('orcamento') ? 'border-eco-amber bg-eco-amber/14 text-white' : 'border-transparent text-[#C7D8D1] hover:bg-white/5 hover:text-white' ?>">Orçamento</a>
             <a href="<?= route('relatorio') ?>" class="flex items-baseline gap-2.5 rounded-md border-l-2 px-2.5 py-2.5 text-[14.5px] <?= isActive('relatorio') ? 'border-eco-amber bg-eco-amber/14 text-white' : 'border-transparent text-[#C7D8D1] hover:bg-white/5 hover:text-white' ?>">Relatório</a>
+
+            <?php if (userCan('consultar_estoque') || userCan('consultar_movimentacao_estoque') || userCan('consultar_clientes') || userCan('consultar_orcamentos')): ?>
+            <p class="mb-2.5 ml-0.5 mt-5 hidden text-xs text-[#9FB4AE] md:block">Comercial</p>
+            <?php if (userCan('consultar_estoque')): ?>
+            <a href="<?= route('placas') ?>" class="flex items-baseline gap-2.5 rounded-md border-l-2 px-2.5 py-2.5 text-[14.5px] <?= isActive('placas') ? 'border-eco-amber bg-eco-amber/14 text-white' : 'border-transparent text-[#C7D8D1] hover:bg-white/5 hover:text-white' ?>">Placas / Estoque</a>
+            <?php endif; ?>
+            <?php if (userCan('consultar_movimentacao_estoque')): ?>
+            <a href="<?= route('movimentacao_estoque') ?>" class="flex items-baseline gap-2.5 rounded-md border-l-2 px-2.5 py-2.5 text-[14.5px] <?= isActive('movimentacao-estoque') ? 'border-eco-amber bg-eco-amber/14 text-white' : 'border-transparent text-[#C7D8D1] hover:bg-white/5 hover:text-white' ?>">Movimentações</a>
+            <?php endif; ?>
+            <?php if (userCan('consultar_clientes')): ?>
+            <a href="<?= route('clientes') ?>" class="flex items-baseline gap-2.5 rounded-md border-l-2 px-2.5 py-2.5 text-[14.5px] <?= isActive('clientes') ? 'border-eco-amber bg-eco-amber/14 text-white' : 'border-transparent text-[#C7D8D1] hover:bg-white/5 hover:text-white' ?>">Clientes</a>
+            <?php endif; ?>
+            <?php if (userCan('consultar_orcamentos')): ?>
+            <a href="<?= route('orcamentos') ?>" class="flex items-baseline gap-2.5 rounded-md border-l-2 px-2.5 py-2.5 text-[14.5px] <?= isActive('orcamentos') || isActive('orcamento-detalhe') || isActive('orcamento-form') ? 'border-eco-amber bg-eco-amber/14 text-white' : 'border-transparent text-[#C7D8D1] hover:bg-white/5 hover:text-white' ?>">Orçamentos</a>
+            <?php endif; ?>
+            <?php endif; ?>
+
+            <?php if (userCan('administrar_usuarios')): ?>
+            <p class="mb-2.5 ml-0.5 mt-5 hidden text-xs text-[#9FB4AE] md:block">Administração</p>
+            <a href="<?= route('usuarios') ?>" class="flex items-baseline gap-2.5 rounded-md border-l-2 px-2.5 py-2.5 text-[14.5px] <?= isActive('usuario') ? 'border-eco-amber bg-eco-amber/14 text-white' : 'border-transparent text-[#C7D8D1] hover:bg-white/5 hover:text-white' ?>">Usuários</a>
+            <?php endif; ?>
         </nav>
     </aside>
     <?php endif; ?>
@@ -111,5 +133,9 @@ $pageTitle = $pageTitle ?? 'EcoVolts';
     <div class="relative min-h-screen">
         <main class="relative px-6 pt-24 pb-12 md:px-14 lg:px-16 z-10">
     <?php else: ?>
-    <main class="<?= $variant === 'landing' ? 'max-w-none p-0' : 'max-w-[760px] px-[22px] py-[34px] pb-[60px] md:px-14 md:py-12 md:pb-20' ?>">
+    <main class="<?= $variant === 'landing'
+        ? 'max-w-none p-0'
+        : ($wide ?? false
+            ? 'max-w-[1180px] px-[22px] py-[34px] pb-[60px] md:px-10 md:py-12 md:pb-20'
+            : 'max-w-[760px] px-[22px] py-[34px] pb-[60px] md:px-14 md:py-12 md:pb-20') ?>">
     <?php endif; ?>

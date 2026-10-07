@@ -1,6 +1,8 @@
 <?php
 require __DIR__ . '/includes/config.php';
 require __DIR__ . '/includes/RoofDirection.php';
+require __DIR__ . '/includes/db.php';
+require __DIR__ . '/includes/business-lookups.php';
 
 if (!$auth['user']) {
     header('Location: login.php');
@@ -88,24 +90,71 @@ $panelCount = (int) ceil(($kwpInstalado * 1000) / PANEL_WATTAGE);
 // assumimos que comporta e deixamos o vendedor confirmar na visita técnica.
 $roofFits = $kwpMaxTelhado === null ? true : ($kwpMaxTelhado >= $kwpNecessario);
 
-// --- Guarda o resultado para a página de relatório exibir ---
-$_SESSION['orcamento_resultado'] = [
-    'bill_amount'          => $billAmount,
-    'roof_direction'       => $directionForCalc->value,
-    'direction_efficiency' => $efficiency,
-    'knows_roof_size'      => $knowsRoofSize,
-    'roof_size_m2'         => $roofSizeM2,
-    'kwp_instalado'        => round($kwpInstalado, 2),
-    'panel_count'          => $panelCount,
-    'geracao_mensal_kwh'   => round($geracaoMensalKwh, 1),
-    'cobertura_percent'    => round($coberturaPercent, 1),
-    'economia_mensal'      => round($economiaMensal, 2),
-    'bill_after'           => round(max(0, $billAmount - $economiaMensal), 2),
-    'investimento'         => round($investimento, 2),
-    'payback_meses'        => $paybackMeses !== null ? round($paybackMeses, 1) : null,
-    'roof_fits'            => $roofFits,
-    'issued_at'            => date('d/m/Y'),
-];
+$billAfter = round(max(0, $billAmount - $economiaMensal), 2);
 
-header('Location: relatorio.php');
+// --- Persiste o orçamento (Telhado + Orcamento + Orcamento_Prod) ---
+$db = getDb();
+
+try {
+    $db->beginTransaction();
+
+    $db->prepare(
+        'INSERT INTO Telhado (area_telhado, direcao_telhado, area_estimada, direcao_estimada, comporta_placas)
+         VALUES (:area, :direcao, :area_estimada, :direcao_estimada, :comporta_placas)'
+    )->execute([
+        'area'             => $roofSizeM2,
+        'direcao'          => $directionForCalc->value,
+        'area_estimada'    => $knowsRoofSize ? 0 : 1,
+        'direcao_estimada' => $knowsDirection ? 0 : 1,
+        'comporta_placas'  => $roofFits ? 1 : 0,
+    ]);
+    $idTelhado = (int) $db->lastInsertId();
+
+    $vendedorId = getOnlineVendorId($db);
+
+    $db->prepare(
+        'INSERT INTO Orcamento
+            (num_orcamento, payback, valor_totalCE, valor_totalCEPI, data_emissao,
+             investimento, id_telhado, id_usuario_cliente, id_usuario_vendedor)
+         VALUES
+            ("", :payback, :valor_totalCE, :valor_totalCEPI, CURDATE(),
+             :investimento, :id_telhado, :id_cliente, :id_vendedor)'
+    )->execute([
+        'payback'         => $paybackMeses !== null ? round($paybackMeses, 1) : null,
+        'valor_totalCE'   => round($billAmount, 2),
+        'valor_totalCEPI' => $billAfter,
+        'investimento'    => round($investimento, 2),
+        'id_telhado'      => $idTelhado,
+        'id_cliente'      => $auth['user']['id'],
+        'id_vendedor'     => $vendedorId,
+    ]);
+    $idOrcamento = (int) $db->lastInsertId();
+
+    // Código legível do orçamento, derivado do id (ex.: ORC-000123).
+    $numOrcamento = 'ORC-' . str_pad((string) $idOrcamento, 6, '0', STR_PAD_LEFT);
+    $db->prepare('UPDATE Orcamento SET num_orcamento = :num WHERE id_orcamento = :id')
+        ->execute(['num' => $numOrcamento, 'id' => $idOrcamento]);
+
+    $painel = getPainelSolarProduto($db);
+    $db->prepare(
+        'INSERT INTO Orcamento_Prod (id_orcamento, id_produto, qtd, valor_unitario, desconto)
+         VALUES (:id_orcamento, :id_produto, :qtd, :valor_unitario, 0.00)'
+    )->execute([
+        'id_orcamento'   => $idOrcamento,
+        'id_produto'     => $painel['id_produto'],
+        'qtd'            => $panelCount,
+        'valor_unitario' => $painel['valorUn_produto'],
+    ]);
+
+    $db->commit();
+} catch (Throwable $e) {
+    $db->rollBack();
+    error_log('Falha ao salvar orçamento: ' . $e->getMessage());
+    $_SESSION['errors'] = ['bill_amount' => 'Não foi possível salvar o orçamento. Tente novamente.'];
+    $_SESSION['old']    = $old;
+    header('Location: orcamento.php');
+    exit;
+}
+
+header('Location: relatorio.php?id=' . $idOrcamento);
 exit;

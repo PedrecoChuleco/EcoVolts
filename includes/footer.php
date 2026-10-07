@@ -5,9 +5,8 @@
  */
 ?>
     <?php if ($variant === 'guest'): ?>
-            </div>
         </main>
-        <div class="lg:fixed inset-0 hidden h-screen overflow-hidden bg-eco-dark lg: lg:block -z-10">
+        <div class="lg:fixed inset-0 hidden h-screen overflow-hidden bg-eco-dark lg:block -z-10">
             <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent"></div>
             <img src="assets/images/auth-banner.jpg" alt="EcoVolts Energia Solar"
                  class="h-full w-full object-cover object-center">

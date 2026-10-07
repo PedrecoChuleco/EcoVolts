@@ -16,8 +16,8 @@
 <footer class="flex flex-col bg-eco-ink py-12">
     <div class="inset grid grid-cols-1 border-b-2 border-eco-hint pb-12 text-left lg:grid-cols-4">
         <div class="mx-auto rounded-xl p-4">
-            <a href="<?= route('home') ?>" class="flex gap-2.5 items-center">
-                <img src="assets/images/brand-small.png" class="w-[55px] h-[48px] shrink-1"/> 
+            <a href="<?= route('home') ?>" class="flex gap-2.5">
+                <i data-lucide="sun-medium" class="text-eco-amber" width="26" height="26"></i>
                 <span class="font-serif text-2xl font-semibold tracking-[0.2px]">
                     <span class="text-eco-green">Eco</span><span class="text-eco-amber">Volts</span>
                 </span>
@@ -69,7 +69,7 @@
 
         <div>
             <h3 class="font-outfit font-bold tracking-widest text-eco-amber">Redes Sociais</h3>
-            <div class="flex gap-4 pt-4">
+            <div class="flex">
                 <?php
                 $socials = [
                     ['icon' => 'fa-instagram', 'href' => 'https://www.instagram.com'],
@@ -83,7 +83,7 @@
                     <a href="<?= htmlspecialchars($social['href']) ?>"
                        <?= $isExternal ? 'target="_blank" rel="noopener noreferrer"' : '' ?>
                        class="flex w-fit items-center justify-center text-left hover:text-eco-amber">
-                        <div class="flex rounded-md gap-12">
+                        <div class="flex size-20 shrink-0 items-center justify-center rounded-md">
                             <i class="fa-brands <?= htmlspecialchars($social['icon']) ?> text-eco-amber text-4xl"></i>
                         </div>
                     </a>

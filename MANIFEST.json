@@ -1,0 +1,25 @@
+{
+  "changed": [
+    "database/schema.sql",
+    "includes/config.php",
+    "includes/header.php",
+    "includes/require-permission.php",
+    "dashboard.php",
+    "usuario-form.php",
+    "usuarios.php",
+    "database/migration-vendedores.sql",
+    "placas.php",
+    "movimentacao-estoque.php"
+  ],
+  "added": [
+    "clientes.php",
+    "orcamentos.php",
+    "orcamento-detalhe.php",
+    "orcamento-form.php",
+    "orcamento-admin-handler.php",
+    "produto-form.php",
+    "produto-handler.php",
+    "movimentacao-estoque-form.php",
+    "movimentacao-estoque-handler.php"
+  ]
+}
