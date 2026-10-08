@@ -155,5 +155,3 @@ require __DIR__ . '/includes/header.php';
         </table>
     </div>
 <?php endif; ?>
-
-<?php require __DIR__ . '/includes/footer.php'; ?>
