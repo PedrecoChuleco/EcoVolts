@@ -1,23 +1,20 @@
 <?php
 /**
- * Closes whatever includes/header.php opened, based on $variant,
- * then prints the site footer and closing scripts/tags.
+ * Fecha o que includes/header.php abriu (conforme $variant), imprime o rodapé
+ * do site SOMENTE na landing e encerra o documento.
  */
+$variant = $variant ?? 'landing';
 ?>
-    <?php if ($variant === 'guest'): ?>
+<?php if ($variant === 'guest'): ?>
         </main>
-        <div class="lg:fixed inset-0 hidden h-screen overflow-hidden bg-eco-dark lg:block -z-10">
-            <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent"></div>
-            <img src="assets/images/auth-banner.jpg" alt="EcoVolts Energia Solar"
-                 class="h-full w-full object-cover object-center">
-        </div>  
     </div>
-    <?php else: ?>
-    </main>
-    <?php endif; ?>
 </div>
+<?php else: ?>
+    </main>
+</div>
+<?php endif; ?>
 
-<?php if ($variant !== 'guest'): ?>
+<?php if ($variant === 'landing'): ?>
     <?php include __DIR__ . '/site-footer.php'; ?>
 <?php endif; ?>
 

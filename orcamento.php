@@ -7,6 +7,20 @@ if (!$auth['user']) {
     exit;
 }
 
+require_once __DIR__ . '/includes/auth-helpers.php';
+require_once __DIR__ . '/includes/business-lookups.php';
+
+$clienteAlvo = null;
+if (isset($_GET['cliente'])) {
+    $clienteAlvo = userCan('consultar_clientes') && userCan('simular_orcamento')
+        ? getClienteParaOrcamento(getDb(), (int) $_GET['cliente'])
+        : null;
+    if (!$clienteAlvo) {
+        header('Location: ' . route('clientes'));
+        exit;
+    }
+}
+
 // Direções disponíveis: agora vêm do enum RoofDirection (fonte única de verdade
 // para as opções e para a eficiência usada no cálculo do orçamento).
 require_once __DIR__ . '/includes/RoofDirection.php';
@@ -34,7 +48,11 @@ $inputClass = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5
 
 <div class="rounded-[10px] border border-eco-line bg-eco-surface p-[30px_32px]">
     <form action="orcamento-handler.php" method="post" class="flex flex-col gap-0" id="orcamento-form">
-
+        <?php if ($clienteAlvo): ?>
+            <p class="mb-4 text-sm">Criando orçamento para <strong><?= htmlspecialchars($clienteAlvo['nome_usuario']) ?></strong></p>
+            <input type="hidden" name="cliente_id" value="<?= (int) $clienteAlvo['id_usuario'] ?>">
+        <?php endif; ?>
+        
         <div class="grid grid-cols-1 gap-x-5 gap-y-[18px] md:grid-cols-2">
 
             <div class="col-span-full flex flex-col gap-1.5">
@@ -47,8 +65,7 @@ $inputClass = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5
                     required
                     placeholder="Ex: 380,00"
                     value="<?= htmlspecialchars($old['bill_amount'] ?? '') ?>"
-                    class="<?= $inputClass ?>"
-                >
+                    class="<?= $inputClass ?>">
                 <?php if (!empty($errors['bill_amount'])): ?>
                     <p class="text-[13px] text-red-600"><?= htmlspecialchars($errors['bill_amount']) ?></p>
                 <?php endif; ?>
@@ -79,8 +96,7 @@ $inputClass = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5
                         type="text"
                         placeholder="Ex: 45"
                         value="<?= htmlspecialchars($old['roof_size_m2'] ?? '') ?>"
-                        class="<?= $inputClass ?>"
-                    >
+                        class="<?= $inputClass ?>">
                     <?php if (!empty($errors['roof_size_m2'])): ?>
                         <p class="mt-1 text-[13px] text-red-600"><?= htmlspecialchars($errors['roof_size_m2']) ?></p>
                     <?php endif; ?>
@@ -136,42 +152,50 @@ $inputClass = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Máscara de moeda (equivalente ao formatCurrency do React)
-    var billInput = document.getElementById('bill_amount');
-    billInput.addEventListener('input', function (e) {
-        var digits = e.target.value.replace(/\D/g, '');
-        var cents  = parseInt(digits || '0', 10);
-        e.target.value = (cents / 100).toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
+    document.addEventListener('DOMContentLoaded', function() {
+        // Máscara de moeda (equivalente ao formatCurrency do React)
+        var billInput = document.getElementById('bill_amount');
+        billInput.addEventListener('input', function(e) {
+            var digits = e.target.value.replace(/\D/g, '');
+            var cents = parseInt(digits || '0', 10);
+            e.target.value = (cents / 100).toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
         });
-    });
 
-    // Toggles Sim/Não (roof size e direction)
-    var groups = {
-        roof_size: { hidden: 'knows_roof_size', field: 'roof_size_field' },
-        direction: { hidden: 'knows_direction', field: 'direction_field' },
-    };
+        // Toggles Sim/Não (roof size e direction)
+        var groups = {
+            roof_size: {
+                hidden: 'knows_roof_size',
+                field: 'roof_size_field'
+            },
+            direction: {
+                hidden: 'knows_direction',
+                field: 'direction_field'
+            },
+        };
 
-    document.querySelectorAll('.toggle-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var group = btn.getAttribute('data-toggle');
-            var value = btn.getAttribute('data-value');
-            var cfg   = groups[group];
+        document.querySelectorAll('.toggle-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var group = btn.getAttribute('data-toggle');
+                var value = btn.getAttribute('data-value');
+                var cfg = groups[group];
 
-            document.getElementById(cfg.hidden).value = value;
-            document.getElementById(cfg.field).style.display = value === '1' ? '' : 'none';
+                document.getElementById(cfg.hidden).value = value;
+                document.getElementById(cfg.field).style.display = value === '1' ? '' : 'none';
 
-            document.querySelectorAll('.toggle-btn[data-toggle="' + group + '"]').forEach(function (b) {
-                var active = b.getAttribute('data-value') === value;
-                b.classList.toggle('border-eco-green', active);
-                b.classList.toggle('bg-eco-green', active);
-                b.classList.toggle('text-white', active);
-                b.classList.toggle('border-eco-line', !active);
-                b.classList.toggle('text-eco-muted', !active);
+                document.querySelectorAll('.toggle-btn[data-toggle="' + group + '"]').forEach(function(b) {
+                    var active = b.getAttribute('data-value') === value;
+                    b.classList.toggle('border-eco-green', active);
+                    b.classList.toggle('bg-eco-green', active);
+                    b.classList.toggle('text-white', active);
+                    b.classList.toggle('border-eco-line', !active);
+                    b.classList.toggle('text-eco-muted', !active);
+                });
             });
         });
     });
-});
 </script>
+
+<?php require __DIR__ . '/includes/footer.php'; ?>

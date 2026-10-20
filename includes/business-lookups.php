@@ -73,3 +73,15 @@ function getPerfilId(PDO $db, string $nomePerfil): int
 
     return (int) $row['id_perfil'];
 }
+
+function getClienteParaOrcamento(PDO $db, int $id): ?array
+{
+    $stmt = $db->prepare(
+        "SELECT u.id_usuario, u.nome_usuario
+         FROM Usuario u JOIN Perfil p ON p.id_perfil = u.id_perfil
+         WHERE u.id_usuario = :id AND p.nome_perfil = 'Cliente' AND u.ativo = 1 AND u.is_system = 0
+         LIMIT 1"
+    );
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch() ?: null;
+}

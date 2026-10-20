@@ -175,3 +175,5 @@ require __DIR__ . '/includes/header.php';
         <?= count($orcamentos) ?> orçamento<?= count($orcamentos) === 1 ? '' : 's' ?> encontrado<?= count($orcamentos) === 1 ? '' : 's' ?>.
     </div>
 <?php endif; ?>
+
+<?php require __DIR__ . '/includes/footer.php'; ?>

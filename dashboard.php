@@ -45,7 +45,7 @@ require __DIR__ . '/includes/header.php';
 
 <?php if (userCan('consultar_estoque') || userCan('consultar_movimentacao_estoque') || userCan('consultar_clientes') || userCan('consultar_orcamentos')): ?>
 <h2 class="mb-4 mt-10 font-serif text-xl">Área comercial</h2>
-<div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+<div class="grid grid-cols-1 gap-5 md:grid-cols-2">
     <?php if (userCan('consultar_estoque')): ?>
     <a href="<?= route('placas') ?>"
        class="rounded-[10px] border border-eco-line bg-eco-surface p-[30px_32px] hover:border-eco-green transition-colors">
@@ -99,3 +99,5 @@ require __DIR__ . '/includes/header.php';
 <a href="auth/logout.php" class="mt-10 inline-flex items-center gap-2 text-sm text-eco-muted hover:text-eco-ink">
     <i data-lucide="log-out" width="16" height="16"></i> Sair
 </a>
+
+<?php require __DIR__ . '/includes/footer.php'; ?>

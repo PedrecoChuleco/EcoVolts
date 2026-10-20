@@ -14,6 +14,23 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+require_once __DIR__ . '/includes/auth-helpers.php';
+$db = getDb();
+
+$idCliente   = (int) $auth['user']['id'];   // fluxo normal: o próprio usuário
+$idVendedor  = null;                        // null = "Vendedor Online"
+$clienteAlvo = (int) ($_POST['cliente_id'] ?? 0);
+
+if ($clienteAlvo > 0) {
+    if (!userCan('consultar_clientes') || !userCan('simular_orcamento') || !getClienteParaOrcamento($db, $clienteAlvo)) {
+        http_response_code(403);
+        exit('Acesso negado.');
+    }
+    $idCliente  = $clienteAlvo;
+    $idVendedor = (int) $auth['user']['id'];  // quem criou fica como vendedor responsável
+}
+$voltar = 'orcamento.php' . ($clienteAlvo ? '?cliente=' . $clienteAlvo : '');
+
 // --- Parâmetros do modelo de cálculo (ajuste conforme sua realidade de negócio) ---
 const KWH_PRICE       = 0.85;   // R$ por kWh cobrado na conta
 const GERACAO_POR_KWP = 120.0;  // kWh/mês gerados por 1 kWp instalado, a 100% de eficiência (direção Norte)
@@ -125,8 +142,8 @@ try {
         'valor_totalCEPI' => $billAfter,
         'investimento'    => round($investimento, 2),
         'id_telhado'      => $idTelhado,
-        'id_cliente'      => $auth['user']['id'],
-        'id_vendedor'     => $vendedorId,
+        'id_cliente'      => $idCliente,
+        'id_vendedor'     => $idVendedor ?? getOnlineVendorId($db),
     ]);
     $idOrcamento = (int) $db->lastInsertId();
 
@@ -156,5 +173,9 @@ try {
     exit;
 }
 
-header('Location: relatorio.php?id=' . $idOrcamento);
+
+
+header('Location: ' . ($clienteAlvo
+    ? 'orcamentos.php?cliente=' . $clienteAlvo   // staff volta para a lista do cliente
+    : 'relatorio.php?id=' . $idOrcamento));
 exit;

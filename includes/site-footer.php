@@ -10,18 +10,18 @@
  *   already used elsewhere on the site.
  * - @icons-pack/react-simple-icons (SiX/SiYoutube/SiFacebook/SiInstagram)
  *   -> Font Awesome brand icons, since Lucide doesn't ship logo marks.
- *   Loaded once in includes/header.php.
+ *
+ * Só a landing usa este rodapé (ver includes/footer.php), então a folha de
+ * estilo do Font Awesome é carregada AQUI e não no <head> global do site.
  */
 ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous" referrerpolicy="no-referrer">
+
 <footer class="flex flex-col bg-eco-ink py-12">
     <div class="inset grid grid-cols-1 border-b-2 border-eco-hint pb-12 text-left lg:grid-cols-4">
         <div class="mx-auto rounded-xl p-4">
-            <a href="<?= route('home') ?>" class="flex gap-2.5">
-                <i data-lucide="sun-medium" class="text-eco-amber" width="26" height="26"></i>
-                <span class="font-serif text-2xl font-semibold tracking-[0.2px]">
-                    <span class="text-eco-green">Eco</span><span class="text-eco-amber">Volts</span>
-                </span>
-            </a>
+            <?php require __DIR__ . '/layout/brand.php'; ?>
         </div>
 
         <div>

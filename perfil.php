@@ -185,3 +185,5 @@ $inputClass = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5
         </a>
     </div>
 </form>
+
+<?php require __DIR__ . '/includes/footer.php'; ?>
