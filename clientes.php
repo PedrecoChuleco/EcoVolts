@@ -37,6 +37,12 @@ $stmt = $db->prepare(
 $stmt->execute($params);
 $clientes = $stmt->fetchAll();
 $podeCriarOrcamento = userCan('simular_orcamento');
+$podeCadastrar      = userCan('cadastrar_clientes');
+$podeEditar         = userCan('editar_clientes');
+
+$flashOk   = $_SESSION['flash_success'] ?? null;
+$flashErro = $_SESSION['flash_error'] ?? null;
+unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
 $variant = 'account';
 $wide = true;
@@ -55,11 +61,24 @@ require __DIR__ . '/includes/header.php';
     </div>
 </div>
 
+<?php if ($flashOk): ?>
+    <p class="mb-5 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700"><?= htmlspecialchars($flashOk) ?></p>
+<?php endif; ?>
+<?php if ($flashErro): ?>
+    <p class="mb-5 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700"><?= htmlspecialchars($flashErro) ?></p>
+<?php endif; ?>
+
 <form method="get" class="mb-5 flex flex-wrap items-center gap-3">
     <input type="search" name="q" value="<?= htmlspecialchars($q) ?>"
         placeholder="Buscar por nome, e-mail, CPF ou CNPJ"
         class="min-w-[260px] flex-1 rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5 text-[14.5px] outline-none focus-visible:border-eco-green">
     <button type="submit" class="rounded-md bg-eco-ink px-[18px] py-2.5 text-[14.5px] font-semibold text-white hover:bg-eco-dark">Buscar</button>
+    <?php if ($podeCadastrar): ?>
+        <a href="clientes-form.php"
+            class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-eco-amber px-[18px] py-2.5 text-[14.5px] font-semibold text-eco-ink hover:bg-eco-amber/75">
+            <i data-lucide="user-plus" width="16" height="16"></i> Cadastrar cliente
+        </a>
+    <?php endif; ?>
     <?php if ($q !== ''): ?>
         <a href="<?= route('clientes') ?>" class="text-[14px] text-eco-muted hover:text-eco-ink">Limpar</a>
     <?php endif; ?>
@@ -111,14 +130,20 @@ require __DIR__ . '/includes/header.php';
                             <?php endif; ?>
                         </td>
                         <td class="px-4 py-3.5 text-right">
-                            <?php if ((int) $cliente['ativo'] !== 1): ?>
-                                <span class="text-eco-muted">Cliente inativo</span>
-                            <?php elseif ($podeCriarOrcamento): ?>
-                                <a href="<?= route('orcamento') ?>?cliente=<?= (int) $cliente['id_usuario'] ?>"
-                                    class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-eco-amber px-3.5 py-2 text-[13.5px] font-semibold text-eco-ink hover:bg-eco-amber/75">
-                                    <i data-lucide="plus" width="16" height="16"></i> Criar orçamento
-                                </a>
-                            <?php endif; ?>
+                            <div class="flex flex-wrap items-center justify-end gap-3">
+                                <?php if ((int) $cliente['ativo'] !== 1): ?>
+                                    <span class="text-eco-muted">Cliente inativo</span>
+                                <?php elseif ($podeCriarOrcamento): ?>
+                                    <a href="<?= route('orcamento') ?>?cliente=<?= (int) $cliente['id_usuario'] ?>"
+                                        class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-eco-amber px-3.5 py-2 text-[13.5px] font-semibold text-eco-ink hover:bg-eco-amber/75">
+                                        <i data-lucide="plus" width="16" height="16"></i> Criar orçamento
+                                    </a>
+                                <?php endif; ?>
+                                <?php if ($podeEditar): ?>
+                                    <a href="clientes-form.php?id=<?= (int) $cliente['id_usuario'] ?>"
+                                        class="font-semibold text-eco-green hover:underline">Editar</a>
+                                <?php endif; ?>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
