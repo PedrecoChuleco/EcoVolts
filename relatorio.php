@@ -172,7 +172,11 @@ $padraoEstimado  = (int) $relatorio['padrao_estimado'] === 1;
             </span>
         <?php endif; ?>
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="orcamento-pdf.php?id=<?= (int) $relatorio['id_orcamento'] ?>"
+               class="inline-flex w-fit items-center gap-2 rounded-md border border-white/20 px-[22px] py-3 text-[15px] font-semibold text-white hover:border-white/40">
+                <i data-lucide="file-down" width="18" height="18"></i> Baixar PDF
+            </a>
             <a href="<?= route('historico') ?>"
                class="inline-flex w-fit items-center gap-2 rounded-md border border-white/20 px-[22px] py-3 text-[15px] font-semibold text-white hover:border-white/40">
                 Ver histórico

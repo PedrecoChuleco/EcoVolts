@@ -87,6 +87,10 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
            class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
             ← Orçamentos
         </a>
+        <a href="orcamento-pdf.php?id=<?= (int) $orcamento['id_orcamento'] ?>"
+   class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
+    <i data-lucide="file-down" width="17" height="17"></i> Baixar PDF
+</a>
         <?php if (userCan('editar_orcamentos')): ?>
             <a href="orcamento-form.php?id=<?= (int) $orcamento['id_orcamento'] ?>"
                class="inline-flex items-center gap-2 rounded-md bg-eco-amber px-4 py-2.5 text-[14px] font-semibold text-eco-ink hover:bg-eco-amber/75">

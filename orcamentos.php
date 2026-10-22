@@ -74,10 +74,15 @@ require __DIR__ . '/includes/header.php';
         <h1 class="font-serif text-[34px] font-medium">Orçamentos</h1>
         <p class="mt-1 text-sm text-eco-muted">Histórico comercial de todos os clientes.</p>
     </div>
+    <div>
     <a href="<?= route('clientes') ?>"
        class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
         <i data-lucide="users-round" width="17" height="17"></i> Ver clientes
     </a>
+    <a href="exportar.php?tipo=orcamentos&<?= htmlspecialchars(http_build_query(array_filter(['cliente' => $clienteFiltro ?: null, 'vendedor' => $vendedorFiltro ?: null]))) ?>"
+   class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
+    <i data-lucide="file-spreadsheet" width="17" height="17"></i> Exportar planilha
+</a></div>
 </div>
 
 <form method="get" class="mb-5 grid grid-cols-1 gap-3 rounded-[10px] border border-eco-line bg-white p-4 md:grid-cols-4">

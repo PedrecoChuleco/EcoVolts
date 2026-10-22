@@ -58,7 +58,12 @@ require __DIR__ . '/includes/header.php';
     <div>
         <h1 class="font-serif text-[34px] font-medium">Clientes</h1>
         <p class="mt-1 text-sm text-eco-muted">Consulta cadastral e histórico de orçamentos por cliente.</p>
+       
     </div>
+    <div> <a href="exportar.php?tipo=clientes<?= $q !== '' ? '&q=' . urlencode($q) : '' ?>"
+   class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-eco-line bg-white px-[18px] py-2.5 text-[14.5px] font-semibold text-eco-green hover:border-eco-green">
+    <i data-lucide="file-spreadsheet" width="16" height="16"></i> Exportar planilha
+</a></div>
 </div>
 
 <?php if ($flashOk): ?>
