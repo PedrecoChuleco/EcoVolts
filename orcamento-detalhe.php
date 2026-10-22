@@ -136,7 +136,7 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
             </div>
             <div>
                 <dt class="text-[12.5px] text-eco-muted">Payback</dt>
-                <dd><?= $orcamento['payback'] !== null ? number_format((float) $orcamento['payback'], 2, ',', '.') . ' anos' : '—' ?></dd>
+                <dd><?= $orcamento['payback'] !== null ? number_format((float) $orcamento['payback'], 1, ',', '.') . ' meses' : '—' ?></dd>
             </div>
             <div>
                 <dt class="text-[12.5px] text-eco-muted">Total CE</dt>

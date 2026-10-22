@@ -154,7 +154,7 @@ require __DIR__ . '/includes/header.php';
                         <?= $orcamento['investimento'] !== null ? 'R$ ' . number_format((float) $orcamento['investimento'], 2, ',', '.') : '—' ?>
                     </td>
                     <td class="px-4 py-3.5 text-right">
-                        <?= $orcamento['payback'] !== null ? number_format((float) $orcamento['payback'], 2, ',', '.') . ' anos' : '—' ?>
+                        <?= $orcamento['payback'] !== null ? number_format((float) $orcamento['payback'], 1, ',', '.') . ' meses' : '—' ?>
                     </td>
                     <td class="px-4 py-3.5 text-right">
                         <div class="flex items-center justify-end gap-3 text-[13.5px]">

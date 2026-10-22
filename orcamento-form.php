@@ -149,10 +149,10 @@ $erro = fn (string $campo) => !empty($errors[$campo])
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <label for="payback" class="text-[13px] font-medium text-eco-muted">Payback (anos)</label>
+                <label for="payback" class="text-[13px] font-medium text-eco-muted">Payback (meses)</label>
                 <input id="payback" name="payback" inputmode="decimal"
                        value="<?= htmlspecialchars((string) oldValue('payback', '')) ?>"
-                       placeholder="Ex.: 4,50" class="<?= $inputClass ?>">
+                       placeholder="Ex.: 54,50" class="<?= $inputClass ?>">
                 <?= $erro('payback') ?>
             </div>
 
