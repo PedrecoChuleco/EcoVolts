@@ -55,6 +55,10 @@ require __DIR__ . '/includes/header.php';
        class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
         <i data-lucide="arrow-left-right" width="17" height="17"></i> Ver movimentações
     </a>
+    <a href="exportar.php?tipo=estoque"
+   class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
+    <i data-lucide="file-spreadsheet" width="17" height="17"></i> Exportar planilha
+</a>
     </div>
 </div>
 
