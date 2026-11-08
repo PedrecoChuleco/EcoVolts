@@ -10,6 +10,7 @@ if (!$auth['user']) {
 require_once __DIR__ . '/includes/auth-helpers.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/relatorios.php'; // ESTOQUE_BAIXO_LIMITE (mesmo limite de placas.php)
+require_once __DIR__ . '/includes/StatusOrcamento.php';
 
 if (!function_exists('brl')) {
     function brl(float $valor, int $casas = 0): string
@@ -66,10 +67,9 @@ if ($ehEquipe) {
 
         $orcamentosRecentes = $db->query(
             'SELECT o.id_orcamento, o.num_orcamento, o.data_emissao, o.investimento,
-                    c.nome_usuario AS cliente_nome, t.comporta_placas
+                    o.status, c.nome_usuario AS cliente_nome
              FROM Orcamento o
              JOIN Usuario c ON c.id_usuario = o.id_usuario_cliente
-             LEFT JOIN Telhado t ON t.id_telhado = o.id_telhado
              ORDER BY o.data_emissao DESC, o.id_orcamento DESC
              LIMIT 6'
         )->fetchAll();
@@ -146,6 +146,13 @@ if ($ehEquipe) {
         fn (array $acesso) => $acesso['permissao'] === null || userCan($acesso['permissao'])
     ));
 }
+
+// Atalhos para os dashboards (só das áreas que o usuário pode consultar).
+$atalhosDashboards = array_values(array_filter([
+    ['area' => 'orcamentos', 'icone' => 'chart-column', 'titulo' => 'Orçamentos × status',  'descricao' => 'Funil por etapa, valores e taxa de aprovação', 'permissao' => 'consultar_orcamentos'],
+    ['area' => 'clientes',   'icone' => 'chart-pie',    'titulo' => 'Clientes por região',  'descricao' => 'Gráfico de pizza por macrorregião',            'permissao' => 'consultar_clientes'],
+    ['area' => 'estoque',    'icone' => 'boxes',        'titulo' => 'Situação do estoque',  'descricao' => 'Quantidade e valor por produto',               'permissao' => 'consultar_estoque'],
+], fn (array $atalho) => userCan($atalho['permissao'])));
 
 require __DIR__ . '/includes/header.php';
 ?>
@@ -227,6 +234,24 @@ require __DIR__ . '/includes/header.php';
         <?php endforeach; ?>
     </div>
 
+    <!-- DASHBOARDS -->
+    <?php if ($atalhosDashboards): ?>
+    <h2 class="mb-3 font-serif text-xl">Dashboards</h2>
+    <div class="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <?php foreach ($atalhosDashboards as $atalho): ?>
+            <a href="indicadores.php?area=<?= htmlspecialchars($atalho['area']) ?>"
+               class="flex items-center gap-3 rounded-[10px] border border-eco-line bg-eco-surface px-4 py-3.5 transition-colors hover:border-eco-green">
+                <i data-lucide="<?= htmlspecialchars($atalho['icone']) ?>" class="shrink-0 text-eco-amber" width="22" height="22"></i>
+                <span class="flex-1">
+                    <span class="block text-[14.5px] font-medium"><?= htmlspecialchars($atalho['titulo']) ?></span>
+                    <span class="block text-[12.5px] text-eco-muted"><?= htmlspecialchars($atalho['descricao']) ?></span>
+                </span>
+                <i data-lucide="chevron-right" class="shrink-0 text-eco-muted" width="18" height="18"></i>
+            </a>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
     <!-- ACOMPANHAMENTO -->
     <?php if ($pode['orcamentos'] || $pode['estoque']): ?>
     <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -249,7 +274,7 @@ require __DIR__ . '/includes/header.php';
                                 <th class="pb-3 font-medium">Cliente</th>
                                 <th class="pb-3 font-medium">Data</th>
                                 <th class="pb-3 text-right font-medium">Investimento</th>
-                                <th class="pb-3 pl-4 font-medium">Telhado</th>
+                                <th class="pb-3 pl-4 font-medium">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -263,13 +288,7 @@ require __DIR__ . '/includes/header.php';
                                 <td class="py-3"><?= htmlspecialchars($orcamento['cliente_nome']) ?></td>
                                 <td class="py-3"><?= $orcamento['data_emissao'] ? date('d/m/Y', strtotime($orcamento['data_emissao'])) : '—' ?></td>
                                 <td class="py-3 text-right"><?= $orcamento['investimento'] !== null ? brl((float) $orcamento['investimento']) : '—' ?></td>
-                                <td class="py-3 pl-4">
-                                    <?php if ((int) $orcamento['comporta_placas'] === 1): ?>
-                                        <span class="inline-flex items-center gap-1.5 text-[13px] text-[#2f6b4f]"><span class="size-[7px] rounded-full bg-[#5FCE93]"></span> Comporta</span>
-                                    <?php else: ?>
-                                        <span class="inline-flex items-center gap-1.5 text-[13px] text-[#b5502f]"><span class="size-[7px] rounded-full bg-eco-amber"></span> Verificar</span>
-                                    <?php endif; ?>
-                                </td>
+                                <td class="py-3 pl-4"><?= StatusOrcamento::selo($orcamento['status']) ?></td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>

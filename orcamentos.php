@@ -1,12 +1,14 @@
 <?php
 $requiredPermission = 'consultar_orcamentos';
 require __DIR__ . '/includes/require-permission.php';
+require_once __DIR__ . '/includes/StatusOrcamento.php';
 
 $db = getDb();
 
 $q = trim($_GET['q'] ?? '');
 $clienteFiltro = (int) ($_GET['cliente'] ?? 0);
 $vendedorFiltro = (int) ($_GET['vendedor'] ?? 0);
+$statusFiltro = StatusOrcamento::tryFrom((string) ($_GET['status'] ?? ''));
 
 $where = [];
 $params = [];
@@ -24,12 +26,16 @@ if ($vendedorFiltro > 0) {
     $where[] = 'o.id_usuario_vendedor = :vendedor';
     $params['vendedor'] = $vendedorFiltro;
 }
+if ($statusFiltro) {
+    $where[] = 'o.status = :status';
+    $params['status'] = $statusFiltro->value;
+}
 
 $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
 $stmt = $db->prepare(
     "SELECT o.id_orcamento, o.num_orcamento, o.payback, o.valor_totalCE,
-            o.valor_totalCEPI, o.data_emissao, o.investimento,
+            o.valor_totalCEPI, o.data_emissao, o.investimento, o.status,
             o.id_usuario_cliente, o.id_usuario_vendedor,
             c.nome_usuario AS cliente_nome, c.login AS cliente_login,
             v.nome_usuario AS vendedor_nome,
@@ -63,6 +69,12 @@ $variant = 'account';
 $wide = true;
 $pageTitle = 'EcoVolts - Orçamentos';
 require __DIR__ . '/includes/header.php';
+
+$classeCampo = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5 text-[14px] outline-none focus-visible:border-eco-green';
+$filtrosExportacao = http_build_query(array_filter([
+    'cliente'  => $clienteFiltro ?: null,
+    'vendedor' => $vendedorFiltro ?: null,
+]));
 ?>
 
 <div class="mb-2.5 mt-10 flex items-center gap-2.5 text-[13.5px] text-eco-muted">
@@ -74,15 +86,20 @@ require __DIR__ . '/includes/header.php';
         <h1 class="font-serif text-[34px] font-medium">Orçamentos</h1>
         <p class="mt-1 text-sm text-eco-muted">Histórico comercial de todos os clientes.</p>
     </div>
-    <div>
-    <a href="<?= route('clientes') ?>"
-       class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
-        <i data-lucide="users-round" width="17" height="17"></i> Ver clientes
-    </a>
-    <a href="exportar.php?tipo=orcamentos&<?= htmlspecialchars(http_build_query(array_filter(['cliente' => $clienteFiltro ?: null, 'vendedor' => $vendedorFiltro ?: null]))) ?>"
-   class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
-    <i data-lucide="file-spreadsheet" width="17" height="17"></i> Exportar planilha
-</a></div>
+    <div class="flex flex-wrap gap-2">
+        <a href="exportar.php?tipo=orcamentos<?= $filtrosExportacao ? '&' . htmlspecialchars($filtrosExportacao) : '' ?>"
+           class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
+            <i data-lucide="file-spreadsheet" width="17" height="17"></i> Exportar planilha
+        </a>
+        <a href="indicadores.php?area=orcamentos"
+           class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
+            <i data-lucide="chart-column" width="17" height="17"></i> Dashboard
+        </a>
+        <a href="<?= route('clientes') ?>"
+           class="inline-flex items-center gap-2 rounded-md border border-eco-line bg-white px-4 py-2.5 text-[14px] font-semibold text-eco-green hover:border-eco-green">
+            <i data-lucide="users-round" width="17" height="17"></i> Ver clientes
+        </a>
+    </div>
 </div>
 
 <form method="get" class="mb-5 grid grid-cols-1 gap-3 rounded-[10px] border border-eco-line bg-white p-4 md:grid-cols-4">
@@ -90,12 +107,22 @@ require __DIR__ . '/includes/header.php';
         <label for="q" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Busca</label>
         <input id="q" type="search" name="q" value="<?= htmlspecialchars($q) ?>"
                placeholder="Nº do orçamento, nome ou e-mail do cliente"
-               class="w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5 text-[14px] outline-none focus-visible:border-eco-green">
+               class="<?= $classeCampo ?>">
+    </div>
+    <div>
+        <label for="status" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Status</label>
+        <select id="status" name="status" class="<?= $classeCampo ?>">
+            <option value="">Todos</option>
+            <?php foreach (StatusOrcamento::cases() as $opcao): ?>
+                <option value="<?= htmlspecialchars($opcao->value) ?>" <?= $statusFiltro === $opcao ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($opcao->label()) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
     </div>
     <div>
         <label for="cliente" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Cliente</label>
-        <select id="cliente" name="cliente"
-                class="w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5 text-[14px] outline-none focus-visible:border-eco-green">
+        <select id="cliente" name="cliente" class="<?= $classeCampo ?>">
             <option value="0">Todos</option>
             <?php foreach ($clientes as $cliente): ?>
                 <option value="<?= (int) $cliente['id_usuario'] ?>" <?= $clienteFiltro === (int) $cliente['id_usuario'] ? 'selected' : '' ?>>
@@ -106,8 +133,7 @@ require __DIR__ . '/includes/header.php';
     </div>
     <div>
         <label for="vendedor" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Vendedor</label>
-        <select id="vendedor" name="vendedor"
-                class="w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5 text-[14px] outline-none focus-visible:border-eco-green">
+        <select id="vendedor" name="vendedor" class="<?= $classeCampo ?>">
             <option value="0">Todos</option>
             <?php foreach ($vendedores as $vendedor): ?>
                 <option value="<?= (int) $vendedor['id_usuario'] ?>" <?= $vendedorFiltro === (int) $vendedor['id_usuario'] ? 'selected' : '' ?>>
@@ -118,7 +144,7 @@ require __DIR__ . '/includes/header.php';
     </div>
     <div class="md:col-span-full flex items-center gap-3">
         <button type="submit" class="rounded-md bg-eco-ink px-[18px] py-2.5 text-[14.5px] font-semibold text-white hover:bg-eco-dark">Filtrar</button>
-        <?php if ($q !== '' || $clienteFiltro || $vendedorFiltro): ?>
+        <?php if ($q !== '' || $clienteFiltro || $vendedorFiltro || $statusFiltro): ?>
             <a href="<?= route('orcamentos') ?>" class="text-[14px] text-eco-muted hover:text-eco-ink">Limpar filtros</a>
         <?php endif; ?>
     </div>
@@ -137,6 +163,7 @@ require __DIR__ . '/includes/header.php';
                     <th class="px-4 py-3.5 font-medium">Cliente</th>
                     <th class="px-4 py-3.5 font-medium">Vendedor</th>
                     <th class="px-4 py-3.5 font-medium">Data</th>
+                    <th class="px-4 py-3.5 font-medium">Status</th>
                     <th class="px-4 py-3.5 text-right font-medium">Investimento</th>
                     <th class="px-4 py-3.5 text-right font-medium">Payback</th>
                     <th class="px-4 py-3.5 text-right font-medium">Ações</th>
@@ -155,6 +182,7 @@ require __DIR__ . '/includes/header.php';
                     </td>
                     <td class="px-4 py-3.5"><?= htmlspecialchars($orcamento['vendedor_nome']) ?></td>
                     <td class="px-4 py-3.5"><?= $orcamento['data_emissao'] ? date('d/m/Y', strtotime($orcamento['data_emissao'])) : '—' ?></td>
+                    <td class="px-4 py-3.5"><?= StatusOrcamento::selo($orcamento['status']) ?></td>
                     <td class="px-4 py-3.5 text-right">
                         <?= $orcamento['investimento'] !== null ? 'R$ ' . number_format((float) $orcamento['investimento'], 2, ',', '.') : '—' ?>
                     </td>

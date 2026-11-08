@@ -11,6 +11,7 @@ require __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/auth-helpers.php';
 require __DIR__ . '/includes/db.php';
 require __DIR__ . '/includes/PadraoLigacao.php';
+require __DIR__ . '/includes/StatusOrcamento.php';
 require __DIR__ . '/includes/PdfSimples.php';
 
 if (!$auth['user']) {
@@ -75,6 +76,7 @@ $padrao          = PadraoLigacao::tryFrom((string) ($orcamento['padrao_ligacao']
 $padraoEstimado  = (int) ($orcamento['padrao_estimado'] ?? 0) === 1;
 $documento       = $orcamento['cpf_usuario'] ?: ($orcamento['cnpj_usuario'] ?: '');
 $dataEmissao     = $orcamento['data_emissao'] ? date('d/m/Y', strtotime($orcamento['data_emissao'])) : '—';
+$statusOrcamento = StatusOrcamento::tryFrom((string) ($orcamento['status'] ?? '')) ?? StatusOrcamento::PADRAO;
 
 // ---------------------------------------------------------------- desenho
 const COR_ESCURO = [33, 33, 33];
@@ -92,7 +94,7 @@ $pdf->retangulo(0, 70, PdfSimples::LARGURA, 4, COR_AMBAR);
 $pdf->texto(MARGEM, 45, 'Eco', 22, true, [255, 255, 255]);
 $pdf->texto(MARGEM + $pdf->larguraTexto('Eco', 22, true), 45, 'Volts', 22, true, COR_AMBAR);
 $pdf->textoDireita(PdfSimples::LARGURA - MARGEM, 36, 'Orçamento ' . $orcamento['num_orcamento'], 14, true, [255, 255, 255]);
-$pdf->textoDireita(PdfSimples::LARGURA - MARGEM, 52, 'Emitido em ' . $dataEmissao, 9, false, [200, 210, 204]);
+$pdf->textoDireita(PdfSimples::LARGURA - MARGEM, 52, 'Emitido em ' . $dataEmissao . '  |  Status: ' . $statusOrcamento->label(), 9, false, [200, 210, 204]);
 $y = 105.0;
 
 /** Começa uma nova página se faltar espaço. */

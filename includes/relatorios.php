@@ -27,7 +27,14 @@
  *             Não exporta CPF/CNPJ (dado pessoal desnecessário para dashboards):
  *             traz apenas tipo_pessoa (PF/PJ).
  * estoque     (1 linha por produto)     sem filtros
+ * orcamentos_status (1 linha por status)  filtros: data_inicial, data_final
+ *             Quantidade, valor orçado e ticket médio por status do orçamento.
+ * clientes_regiao   (1 linha por região) sem filtros
+ *             Quantidade de clientes por macrorregião (Norte, Nordeste, Centro-Oeste,
+ *             Sudeste, Sul) a partir do estado do endereço residencial.
  */
+
+require_once __DIR__ . '/StatusOrcamento.php';
 
 /** Tipos de relatório disponíveis e a função que monta cada um. */
 function relatoriosDisponiveis(): array
@@ -36,6 +43,8 @@ function relatoriosDisponiveis(): array
         'orcamentos' => 'relatorioOrcamentos',
         'clientes'   => 'relatorioClientes',
         'estoque'    => 'relatorioEstoque',
+        'orcamentos_status' => 'relatorioOrcamentosStatus',
+        'clientes_regiao'   => 'relatorioClientesRegiao',
     ];
 }
 
@@ -81,6 +90,7 @@ function relatorioOrcamentos(array $filtros = []): array
                    o.payback AS payback_meses,
                    o.padrao_ligacao,
                    o.padrao_estimado,
+                   o.status,
                    t.area_telhado AS area_telhado_m2,
                    t.direcao_telhado,
                    t.area_estimada,
@@ -121,6 +131,7 @@ function relatorioOrcamentos(array $filtros = []): array
             ['campo' => 'payback_meses',         'titulo' => 'payback_meses',         'tipo' => 'decimal', 'casas' => 1],
             ['campo' => 'padrao_ligacao',        'titulo' => 'padrao_ligacao',        'tipo' => 'texto'],
             ['campo' => 'padrao_estimado',       'titulo' => 'padrao_estimado',       'tipo' => 'inteiro'],
+            ['campo' => 'status',                'titulo' => 'status',                'tipo' => 'texto'],
             ['campo' => 'area_telhado_m2',       'titulo' => 'area_telhado_m2',       'tipo' => 'decimal'],
             ['campo' => 'direcao_telhado',       'titulo' => 'direcao_telhado',       'tipo' => 'texto'],
             ['campo' => 'area_estimada',         'titulo' => 'area_estimada',         'tipo' => 'inteiro'],
@@ -157,6 +168,7 @@ function relatorioClientes(array $filtros = []): array
                    u.ativo,
                    DATE(u.criado_em) AS data_cadastro,
                    es.sigla_estado AS estado,
+                   " . sqlRegiao('es.sigla_estado') . " AS regiao,
                    ci.nome_cidade  AS cidade,
                    b.nome_bairro   AS bairro,
                    (SELECT COUNT(*) FROM Orcamento o
@@ -187,6 +199,7 @@ function relatorioClientes(array $filtros = []): array
             ['campo' => 'ativo',                     'titulo' => 'ativo',                     'tipo' => 'inteiro'],
             ['campo' => 'data_cadastro',             'titulo' => 'data_cadastro',             'tipo' => 'data'],
             ['campo' => 'estado',                    'titulo' => 'estado',                    'tipo' => 'texto'],
+            ['campo' => 'regiao',                    'titulo' => 'regiao',                    'tipo' => 'texto'],
             ['campo' => 'cidade',                    'titulo' => 'cidade',                    'tipo' => 'texto'],
             ['campo' => 'bairro',                    'titulo' => 'bairro',                    'tipo' => 'texto'],
             ['campo' => 'qtd_orcamentos',            'titulo' => 'qtd_orcamentos',            'tipo' => 'inteiro'],
@@ -221,7 +234,7 @@ function relatorioEstoque(array $filtros = []): array
                    (SELECT COALESCE(SUM(m.quantidade), 0) FROM MovimentacaoEstoque m
                      WHERE m.id_estoque = e.id_estoque AND m.tipo = 'saida') AS total_saidas
             FROM Produto p
-            LEFT JOIN Estoque e ON e.id_produto = p.id_produto
+            JOIN Estoque e ON e.id_produto = p.id_produto
             ORDER BY p.id_produto";
 
     return [
@@ -242,6 +255,103 @@ function relatorioEstoque(array $filtros = []): array
             ['campo' => 'data_ultima_movimentacao', 'titulo' => 'data_ultima_movimentacao', 'tipo' => 'data'],
             ['campo' => 'total_entradas',           'titulo' => 'total_entradas',           'tipo' => 'inteiro'],
             ['campo' => 'total_saidas',             'titulo' => 'total_saidas',             'tipo' => 'inteiro'],
+        ],
+        'sql'    => $sql,
+        'params' => [],
+    ];
+}
+
+
+/**
+ * Expressão SQL que converte a sigla do estado na macrorregião do Brasil.
+ * Sem endereço cadastrado (sigla nula) => "Sem endereço".
+ */
+function sqlRegiao(string $coluna): string
+{
+    return "CASE
+                WHEN $coluna IN ('AC','AM','AP','PA','RO','RR','TO') THEN 'Norte'
+                WHEN $coluna IN ('AL','BA','CE','MA','PB','PE','PI','RN','SE') THEN 'Nordeste'
+                WHEN $coluna IN ('DF','GO','MS','MT') THEN 'Centro-Oeste'
+                WHEN $coluna IN ('ES','MG','RJ','SP') THEN 'Sudeste'
+                WHEN $coluna IN ('PR','RS','SC') THEN 'Sul'
+                ELSE 'Sem endereço'
+            END";
+}
+
+/**
+ * Orçamentos x status: quantidade, valor orçado e ticket médio por status.
+ * Só aparecem status que têm orçamentos (as telas completam os zeros).
+ */
+function relatorioOrcamentosStatus(array $filtros = []): array
+{
+    $where  = [];
+    $params = [];
+
+    if ($inicial = dataValida($filtros['data_inicial'] ?? null)) {
+        $where[] = 'o.data_emissao >= :data_inicial';
+        $params['data_inicial'] = $inicial;
+    }
+    if ($final = dataValida($filtros['data_final'] ?? null)) {
+        $where[] = 'o.data_emissao <= :data_final';
+        $params['data_final'] = $final;
+    }
+
+    $nomes = '';
+    foreach (StatusOrcamento::cases() as $status) {
+        $nomes .= sprintf(" WHEN '%s' THEN '%s'", $status->value, $status->label());
+    }
+
+    $sql = "SELECT o.status,
+                   CASE o.status$nomes ELSE o.status END AS status_nome,
+                   COUNT(*) AS qtd_orcamentos,
+                   COALESCE(SUM(o.investimento), 0) AS valor_total_orcado,
+                   AVG(o.investimento) AS ticket_medio
+            FROM Orcamento o"
+        . ($where ? ' WHERE ' . implode(' AND ', $where) : '')
+        . ' GROUP BY o.status ORDER BY qtd_orcamentos DESC';
+
+    return [
+        'arquivo'   => 'orcamentos_por_status',
+        'permissao' => 'consultar_orcamentos',
+        'colunas'   => [
+            ['campo' => 'status',             'titulo' => 'status',             'tipo' => 'texto'],
+            ['campo' => 'status_nome',        'titulo' => 'status_nome',        'tipo' => 'texto'],
+            ['campo' => 'qtd_orcamentos',     'titulo' => 'qtd_orcamentos',     'tipo' => 'inteiro'],
+            ['campo' => 'valor_total_orcado', 'titulo' => 'valor_total_orcado', 'tipo' => 'decimal'],
+            ['campo' => 'ticket_medio',       'titulo' => 'ticket_medio',       'tipo' => 'decimal'],
+        ],
+        'sql'    => $sql,
+        'params' => $params,
+    ];
+}
+
+/** Clientes por macrorregião (a partir do estado do endereço residencial). */
+function relatorioClientesRegiao(array $filtros = []): array
+{
+    $sql = "SELECT regiao,
+                   COUNT(*) AS qtd_clientes,
+                   SUM(ativo) AS qtd_clientes_ativos
+            FROM (
+                SELECT u.id_usuario, u.ativo, " . sqlRegiao('es.sigla_estado') . " AS regiao
+                FROM Usuario u
+                JOIN Perfil p ON p.id_perfil = u.id_perfil
+                LEFT JOIN usuario_endereco ue ON ue.id_usuario = u.id_usuario AND ue.tipo_endereco = 'Residencial'
+                LEFT JOIN Endereco en ON en.id_endereco = ue.id_endereco
+                LEFT JOIN Bairro b    ON b.id_bairro    = en.id_bairro
+                LEFT JOIN Cidade ci   ON ci.id_cidade   = b.id_cidade
+                LEFT JOIN Estado es   ON es.id_estado   = ci.id_estado
+                WHERE p.nome_perfil = 'Cliente' AND u.is_system = 0
+            ) clientes_regiao
+            GROUP BY regiao
+            ORDER BY qtd_clientes DESC";
+
+    return [
+        'arquivo'   => 'clientes_por_regiao',
+        'permissao' => 'consultar_clientes',
+        'colunas'   => [
+            ['campo' => 'regiao',               'titulo' => 'regiao',               'tipo' => 'texto'],
+            ['campo' => 'qtd_clientes',         'titulo' => 'qtd_clientes',         'tipo' => 'inteiro'],
+            ['campo' => 'qtd_clientes_ativos',  'titulo' => 'qtd_clientes_ativos',  'tipo' => 'inteiro'],
         ],
         'sql'    => $sql,
         'params' => [],

@@ -2,6 +2,7 @@
 require __DIR__ . '/includes/config.php';
 require __DIR__ . '/includes/db.php';
 require __DIR__ . '/includes/PadraoLigacao.php';
+require __DIR__ . '/includes/StatusOrcamento.php';
 
 if (!$auth['user']) {
     header('Location: login.php');
@@ -17,14 +18,17 @@ $colunas = 'o.id_orcamento, o.num_orcamento, o.payback, o.valor_totalCE, o.valor
             o.data_emissao, o.investimento, o.id_usuario_cliente,
             o.padrao_ligacao, o.padrao_estimado,
             t.area_telhado, t.direcao_telhado, t.area_estimada, t.direcao_estimada, t.comporta_placas,
-            op.qtd AS qtd_placas';
+            o.status,
+            (SELECT COALESCE(SUM(op.qtd), 0) FROM Orcamento_Prod op
+               JOIN Produto p ON p.id_produto = op.id_produto
+              WHERE op.id_orcamento = o.id_orcamento
+                AND p.nome_produto LIKE \'Painel Solar%\') AS qtd_placas';
 
 if ($id) {
     $consulta = $db->prepare(
         "SELECT $colunas
          FROM Orcamento o
          LEFT JOIN Telhado t         ON t.id_telhado = o.id_telhado
-         LEFT JOIN Orcamento_Prod op ON op.id_orcamento = o.id_orcamento
          WHERE o.id_orcamento = :id
          LIMIT 1"
     );
@@ -35,7 +39,6 @@ if ($id) {
         "SELECT $colunas
          FROM Orcamento o
          LEFT JOIN Telhado t         ON t.id_telhado = o.id_telhado
-         LEFT JOIN Orcamento_Prod op ON op.id_orcamento = o.id_orcamento
          WHERE o.id_usuario_cliente = :uid
          ORDER BY o.data_emissao DESC, o.id_orcamento DESC
          LIMIT 1"
@@ -50,6 +53,17 @@ if (!$relatorio || (int) $relatorio['id_usuario_cliente'] !== (int) $auth['user'
     header('Location: orcamento.php');
     exit;
 }
+
+// Composição do investimento: todos os itens do orçamento (placas, inversor, cabos, mão de obra).
+$consultaItens = $db->prepare(
+    'SELECT op.qtd, op.valor_unitario, op.desconto, p.nome_produto
+     FROM Orcamento_Prod op
+     JOIN Produto p ON p.id_produto = op.id_produto
+     WHERE op.id_orcamento = :id
+     ORDER BY (op.qtd * op.valor_unitario - COALESCE(op.desconto, 0)) DESC'
+);
+$consultaItens->execute(['id' => $relatorio['id_orcamento']]);
+$itens = $consultaItens->fetchAll();
 
 function brl(float $valor): string
 {
@@ -133,6 +147,12 @@ $padraoEstimado  = (int) $relatorio['padrao_estimado'] === 1;
             <dt class="mb-1 text-[12.5px] text-[#9FB4AE]">Conta após instalação</dt>
             <dd class="m-0 font-serif text-xl"><?= brl((float) $relatorio['valor_totalCEPI']) ?></dd>
         </div>
+        <div>
+            <dt class="mb-1 text-[12.5px] text-[#9FB4AE]">Status</dt>
+            <dd class="m-0 font-serif text-xl">
+                <?= htmlspecialchars((StatusOrcamento::tryFrom((string) $relatorio['status']) ?? StatusOrcamento::PADRAO)->label()) ?>
+            </dd>
+        </div>
         <?php if ($padrao): ?>
         <div>
             <dt class="mb-1 text-[12.5px] text-[#9FB4AE]">Padrão de ligação</dt>
@@ -158,6 +178,34 @@ $padraoEstimado  = (int) $relatorio['padrao_estimado'] === 1;
             </dd>
         </div>
     </dl>
+
+    <?php if (!empty($itens)): ?>
+    <div class="border-t border-white/12 px-8 py-[22px]">
+        <h4 class="mb-3 font-serif text-lg font-medium">Composição do investimento</h4>
+        <table class="w-full border-collapse text-left text-[14px]">
+            <thead>
+                <tr class="text-[12.5px] text-[#9FB4AE]">
+                    <th class="pb-2 font-medium">Item</th>
+                    <th class="pb-2 text-right font-medium">Qtd.</th>
+                    <th class="pb-2 text-right font-medium">Valor unit.</th>
+                    <th class="pb-2 text-right font-medium">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($itens as $item):
+                $subtotal = (int) $item['qtd'] * (float) $item['valor_unitario'] - (float) $item['desconto'];
+            ?>
+                <tr class="border-t border-white/10">
+                    <td class="py-2"><?= htmlspecialchars($item['nome_produto']) ?></td>
+                    <td class="py-2 text-right"><?= number_format((int) $item['qtd'], 0, ',', '.') ?></td>
+                    <td class="py-2 text-right"><?= brl((float) $item['valor_unitario']) ?></td>
+                    <td class="py-2 text-right font-semibold"><?= brl($subtotal) ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
 
     <div class="flex flex-wrap items-center justify-between gap-4 px-8 pt-[18px] pb-[26px]">
         <?php if ($telhadoComporta): ?>
