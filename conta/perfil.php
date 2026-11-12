@@ -36,7 +36,7 @@ unset($_SESSION['errors'], $_SESSION['success'], $_SESSION['old']);
 // caso contrário, pré-preenche com o que já está salvo no banco.
 $form = $old ?? [
     'name'         => $usuario['nome_usuario'],
-    'email_usuario'=> $usuario['email_usuario'],
+    'email_usuario' => $usuario['email_usuario'],
     'cpf'          => $usuario['cpf_usuario'],
     'cnpj'         => $usuario['cnpj_usuario'],
     'logradouro'   => $endereco['logradouro']  ?? '',
@@ -79,7 +79,7 @@ $inputClass = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5
             <div class="flex flex-col gap-1.5">
                 <label class="text-[13px] font-medium text-eco-muted">E-mail de login</label>
                 <input type="email" value="<?= htmlspecialchars($usuario['login']) ?>" disabled
-                       class="<?= $inputClass ?> cursor-not-allowed opacity-70">
+                    class="<?= $inputClass ?> cursor-not-allowed opacity-70">
                 <span class="text-[12px] text-eco-hint">Para alterar o e-mail de login, entre em contato com o suporte.</span>
             </div>
 
@@ -91,15 +91,15 @@ $inputClass = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5
 
             <div class="flex flex-col gap-1.5">
                 <label for="cpf" class="text-[13px] font-medium text-eco-muted">CPF (opcional)</label>
-                <input id="cpf" name="cpf" type="text" inputmode="numeric" maxlength="11" placeholder="Somente números"
-                       value="<?= htmlspecialchars($form['cpf'] ?? '') ?>" class="<?= $inputClass ?>">
+                <input id="cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"
+                    value="<?= htmlspecialchars($form['cpf'] ?? '') ?>" class="<?= $inputClass ?>">
                 <?php if (!empty($errors['cpf'])): ?><p class="text-[13px] text-red-600"><?= htmlspecialchars($errors['cpf']) ?></p><?php endif; ?>
             </div>
 
             <div class="flex flex-col gap-1.5">
                 <label for="cnpj" class="text-[13px] font-medium text-eco-muted">CNPJ (opcional, para pessoa jurídica)</label>
-                <input id="cnpj" name="cnpj" type="text" inputmode="numeric" maxlength="14" placeholder="Somente números"
-                       value="<?= htmlspecialchars($form['cnpj'] ?? '') ?>" class="<?= $inputClass ?>">
+                <input id="cnpj" name="cnpj" type="text" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00"
+                    value="<?= htmlspecialchars($form['cnpj'] ?? '') ?>" class="<?= $inputClass ?>">
                 <?php if (!empty($errors['cnpj'])): ?><p class="text-[13px] text-red-600"><?= htmlspecialchars($errors['cnpj']) ?></p><?php endif; ?>
             </div>
         </div>
@@ -149,8 +149,8 @@ $inputClass = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5
 
             <div class="flex flex-col gap-1.5">
                 <label for="cep" class="text-[13px] font-medium text-eco-muted">CEP</label>
-                <input id="cep" name="cep" type="text" inputmode="numeric" maxlength="8" placeholder="Somente números"
-                       value="<?= htmlspecialchars($form['cep']) ?>" class="<?= $inputClass ?>">
+                <input id="cep" name="cep" type="text" inputmode="numeric" maxlength="9" placeholder="00000-000"
+                    value="<?= htmlspecialchars($form['cep']) ?>" class="<?= $inputClass ?>">
             </div>
         </div>
         <?php if (!empty($errors['endereco'])): ?>
@@ -186,4 +186,6 @@ $inputClass = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5
     </div>
 </form>
 
+<script src="../assets/js/masks.js"></script>
+<script src="../assets/js/viacep.js"></script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -108,13 +108,13 @@ $v = fn (string $campo) => htmlspecialchars((string) ($form[$campo] ?? ''));
 
             <div class="flex flex-col gap-1.5">
                 <label for="cpf" class="text-[13px] font-medium text-eco-muted">CPF (opcional)</label>
-                <input id="cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="Somente números" value="<?= $v('cpf') ?>" class="<?= $inputClass ?>">
+                <input id="cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" value="<?= $v('cpf') ?>" class="<?= $inputClass ?>">
                 <?= $erro('cpf') ?>
             </div>
 
             <div class="flex flex-col gap-1.5">
                 <label for="cnpj" class="text-[13px] font-medium text-eco-muted">CNPJ (opcional, pessoa jurídica)</label>
-                <input id="cnpj" name="cnpj" type="text" inputmode="numeric" maxlength="18" placeholder="Somente números" value="<?= $v('cnpj') ?>" class="<?= $inputClass ?>">
+                <input id="cnpj" name="cnpj" type="text" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00" value="<?= $v('cnpj') ?>" class="<?= $inputClass ?>">
                 <?= $erro('cnpj') ?>
             </div>
         </div>
@@ -157,7 +157,7 @@ $v = fn (string $campo) => htmlspecialchars((string) ($form[$campo] ?? ''));
             </div>
             <div class="flex flex-col gap-1.5">
                 <label for="cep" class="text-[13px] font-medium text-eco-muted">CEP</label>
-                <input id="cep" name="cep" type="text" inputmode="numeric" maxlength="9" placeholder="Somente números" value="<?= $v('cep') ?>" class="<?= $inputClass ?>">
+                <input id="cep" name="cep" type="text" inputmode="numeric" maxlength="9" placeholder="00000-000" value="<?= $v('cep') ?>" class="<?= $inputClass ?>">
             </div>
         </div>
         <?= $erro('endereco') ?>
@@ -179,4 +179,6 @@ $v = fn (string $campo) => htmlspecialchars((string) ($form[$campo] ?? ''));
     </div>
 </form>
 
+<script src="../assets/js/masks.js"></script>
+<script src="../assets/js/viacep.js"></script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>
