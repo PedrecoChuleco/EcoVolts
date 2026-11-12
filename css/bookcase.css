@@ -1,0 +1,70 @@
+#bookcase{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+#bookcoffees{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.book-coffee{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 20px;
+    gap: 18px;
+    width: 25%;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0px 0px 12px 4px rgba(0,0,0,0.1);
+}
+
+.bookcoffee-description{
+    color: #434343;
+    text-align: center;
+}
+
+.bookcoffee-rate i{
+ color: #8ba6f6;
+}
+
+.bookcoffee-image{
+    width: 50%;
+    height: 35%;
+}
+
+.book-coffee:hover{
+    
+    background-color: #bfcdf8;
+    
+}
+
+@media screen and (max-width: 1170px){
+
+    #bookcoffees{
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .book-coffee{
+        width: calc(50% - 12px);
+    }
+}
+
+@media screen and (max-width: 600px){    
+
+    .book-coffee{
+        width: 100%;
+    }
+
+    #bookcase .section-subtitle{
+        text-align: center;
+    }
+}

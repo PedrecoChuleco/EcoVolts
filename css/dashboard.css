@@ -1,0 +1,23 @@
+ .navbar {
+     color: #8ba6f6;
+ }
+
+ a {
+     text-decoration: none;
+     color: black;
+ }
+
+ .card {
+     transition: transform 0.2s ease;
+ }
+
+ .card:hover {
+     transform: scale(1.05);
+ }
+
+ body {
+
+     font-family: "Poppins", sans-serif;
+     background-color: #d9e7f8;
+
+ }

@@ -1,0 +1,84 @@
+ body {
+
+     font-family: "Poppins", sans-serif;
+     background-color: #d9e7f8;
+
+ }
+
+.navbar {
+     color: #8ba6f6;
+ }
+
+#carrinho {
+  font-family: "Poppins", sans-serif;
+  background-color: white;
+  margin: 40px auto;
+  max-width: 800px;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  color: #222;
+  margin-bottom: 30px;
+}
+
+section {
+  
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+
+
+#provisorio {
+  border-left: 4px solid #0078d7;
+}
+
+#recibo-final {
+  border-left: 4px solid #2ecc71;
+}
+
+button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #0078d7;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #005fa3;
+}
+
+#nova-venda {
+  background-color: #2ecc71;
+}
+
+#nova-venda:hover {
+  background-color: #27ae60;
+}
+
+.hidden {
+  display: none;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  margin-bottom: 6px;
+}
+
+ a {
+     text-decoration: none;
+     color: black;
+ }

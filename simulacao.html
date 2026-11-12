@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrinho de Compras</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="css/carrinho.css">
+</head>
+
+<body>
+  <nav class="navbar">
+        <div class="container-fluid">
+            <i class="fa-solid fa-book-open-reader" id="nav_logo"> BOOKS <br>& COFFEE <i class="fa-solid fa-mug-hot"></i></i>            
+            <p><a href="dashboard.php">Voltar</a></p>
+        </div>
+    </nav>
+ <h1>🛍️ Carrinho de Compras – Books & Coffee</h1>
+<div id="carrinho">
+
+
+  <section>
+    <h2>📚 Livros</h2>
+    <div>
+      <label><input type="checkbox" class="item" data-nome="O Senhor dos Anéis" data-preco="89.90"> O Senhor dos Anéis —
+        R$ 89,90</label><br>
+      <label><input type="checkbox" class="item" data-nome="Dom Casmurro" data-preco="39.90"> Dom Casmurro — R$
+        39,90</label><br>
+      <label><input type="checkbox" class="item" data-nome="Clean Code" data-preco="119.90"> Clean Code — R$
+        119,90</label><br>
+      <label><input type="checkbox" class="item" data-nome="JavaScript: The Good Parts" data-preco="74.50"> JavaScript:
+        The Good Parts — R$ 74,50</label><br>
+      <label><input type="checkbox" class="item" data-nome="O Pequeno Príncipe" data-preco="29.90"> O Pequeno Príncipe —
+        R$ 29,90</label><br>
+      <label><input type="checkbox" class="item" data-nome="A Revolução dos Bichos" data-preco="34.90"> A Revolução dos
+        Bichos — R$ 34,90</label>
+    </div>
+  </section>
+
+  <section>
+    <h2>☕ Cafés</h2>
+    <div>
+      <label><input type="checkbox" class="item" data-nome="Cappuccino" data-preco="12.00"> Cappuccino — R$
+        12,00</label><br>
+      <label><input type="checkbox" class="item" data-nome="Espresso" data-preco="8.50"> Espresso — R$ 8,50</label><br>
+      <label><input type="checkbox" class="item" data-nome="Latte" data-preco="10.00"> Latte — R$ 10,00</label><br>
+      <label><input type="checkbox" class="item" data-nome="Mocha" data-preco="13.00"> Mocha — R$ 13,00</label><br>
+      <label><input type="checkbox" class="item" data-nome="Café Gelado" data-preco="11.00"> Café Gelado — R$
+        11,00</label><br>
+      <label><input type="checkbox" class="item" data-nome="Café com Leite" data-preco="9.00"> Café com Leite — R$
+        9,00</label>
+    </div>
+  </section>
+
+  <section id="provisorio">
+    <h2>🧾 Lista Provisória</h2>
+    <div id="lista-itens"></div>
+    <p><strong>Total Provisório: R$ <span id="total">0,00</span></strong></p>
+    <button id="finalizar">Finalizar Compra</button>
+  </section>
+
+  <section id="recibo-final" class="hidden">
+    <h2>✅ Recibo Final</h2>
+    <div id="recibo-itens"></div>
+    <p><strong>Total da Compra: R$ <span id="total-final">0,00</span></strong></p>
+    <button id="nova-venda">Nova Venda</button>
+  </section>
+</div>
+ 
+
+  <script src="js/carrinho.js"></script>
+</body>
+
+</html>
