@@ -19,7 +19,7 @@ if (PHP_SAPI !== 'cli') {
 }
 
 require __DIR__ . '/../includes/db.php';
-require __DIR__ . '/../includes/business-lookups.php';
+require __DIR__ . '/../includes/helpers/business-lookups.php';
 
 [, $email, $nome, $senha] = array_pad($argv, 4, null);
 

@@ -10,7 +10,7 @@
  */
 return [
     'host'    => '127.0.0.1',
-    'port'    => 3306,
+    'port'    => 3307,
     'name'    => 'ecovolts',
     'user'    => 'ecovolts_app',
     'pass'    => 'segredo',

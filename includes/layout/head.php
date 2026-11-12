@@ -47,7 +47,7 @@
   };
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="<?= asset('css/style.css') ?>">
 <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="min-h-screen bg-eco-bg font-sans text-eco-ink">

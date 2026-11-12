@@ -6,24 +6,24 @@
  */
 require __DIR__ . '/../includes/config.php';
 require __DIR__ . '/../includes/db.php';
-require __DIR__ . '/../includes/business-lookups.php';
+require __DIR__ . '/../includes/helpers/business-lookups.php';
 
 $name     = trim($_POST['name'] ?? '');
 $email    = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
 if ($name === '' || $email === '' || $password === '') {
-    header('Location: ../register.php?error=' . urlencode('Preencha todos os campos.'));
+    header('Location: ' . route('register') . '?error=' . urlencode('Preencha todos os campos.'));
     exit;
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    header('Location: ../register.php?error=' . urlencode('E-mail inválido.'));
+    header('Location: ' . route('register') . '?error=' . urlencode('E-mail inválido.'));
     exit;
 }
 
 if (strlen($password) < 8) {
-    header('Location: ../register.php?error=' . urlencode('A senha precisa ter pelo menos 8 caracteres.'));
+    header('Location: ' . route('register') . '?error=' . urlencode('A senha precisa ter pelo menos 8 caracteres.'));
     exit;
 }
 
@@ -33,7 +33,7 @@ $check = $db->prepare('SELECT id_usuario FROM Usuario WHERE login = :login LIMIT
 $check->execute(['login' => $email]);
 
 if ($check->fetch()) {
-    header('Location: ../register.php?error=' . urlencode('Este e-mail já está cadastrado.'));
+    header('Location: ' . route('register') . '?error=' . urlencode('Este e-mail já está cadastrado.'));
     exit;
 }
 
@@ -59,5 +59,5 @@ $_SESSION['user'] = [
     'perfil' => 'Cliente',
 ];
 
-header('Location: ../dashboard.php');
+header('Location: ' . route('dashboard'));
 exit;

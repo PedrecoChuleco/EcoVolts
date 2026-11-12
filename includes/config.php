@@ -10,27 +10,92 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+/**
+ * URL base do projeto, sem barra no fim. Calculada a partir de onde o script em
+ * execucao esta dentro do projeto, entao funciona em qualquer lugar:
+ *   http://localhost/ecovolts/...  -> "/ecovolts"   (XAMPP, htdocs/ecovolts)
+ *   http://ecovolts.test/...       -> ""            (VirtualHost na raiz)
+ */
+function baseUrl(): string
+{
+    $raiz   = str_replace('\\', '/', (string) realpath(__DIR__ . '/..'));
+    $script = str_replace('\\', '/', (string) realpath($_SERVER['SCRIPT_FILENAME'] ?? ''));
+    $nome   = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+
+    if ($raiz !== '' && $script !== '' && stripos($script, $raiz . '/') === 0) {
+        $rel = substr($script, strlen($raiz));                 // "/conta/dashboard.php"
+        if (strlen($nome) >= strlen($rel) && strcasecmp(substr($nome, -strlen($rel)), $rel) === 0) {
+            $base = substr($nome, 0, strlen($nome) - strlen($rel));
+            return implode('/', array_map('rawurlencode', explode('/', $base)));
+        }
+    }
+
+    return '';
+}
+
+if (!defined('BASE_URL')) {
+    define('BASE_URL', baseUrl());
+}
+
+/** URL de um arquivo dentro de assets/, ex.: asset('css/style.css'). */
+function asset(string $caminho): string
+{
+    return BASE_URL . '/assets/' . ltrim($caminho, '/');
+}
+
+/**
+ * URL de uma pagina pelo nome (chave = nome do arquivo com "_" no lugar de "-").
+ * Para mover uma pagina de pasta, basta mudar o caminho aqui.
+ * Nome desconhecido devolve '#'.
+ */
 function route(string $name): string
 {
     static $routes = [
-        'home'      => 'index.php',
-        'login'     => 'login.php',
-        'register'  => 'register.php',
-        'dashboard' => 'dashboard.php',
-        'perfil'    => 'perfil.php',
-        'orcamento' => 'orcamento.php',
-        'relatorio' => 'relatorio.php',
-        'historico'             => 'historico.php',
-        'usuarios'              => 'usuarios.php',
-        'placas'                => 'placas.php',
-        'produto_form'          => 'produto-form.php',
-        'movimentacao_estoque'  => 'movimentacao-estoque.php',
-        'movimentacao_estoque_form' => 'movimentacao-estoque-form.php',
-        'clientes'              => 'clientes.php',
-        'orcamentos'            => 'orcamentos.php',
+        // (raiz)
+        'home' => 'index.php',
+        // auth
+        'login'            => 'auth/login.php',
+        'login_handler'    => 'auth/login-handler.php',
+        'logout'           => 'auth/logout.php',
+        'register'         => 'auth/register.php',
+        'register_handler' => 'auth/register-handler.php',
+        // conta
+        'dashboard'      => 'conta/dashboard.php',
+        'perfil'         => 'conta/perfil.php',
+        'perfil_handler' => 'conta/perfil-handler.php',
+        // simulador
+        'historico'         => 'simulador/historico.php',
+        'orcamento'         => 'simulador/orcamento.php',
+        'orcamento_handler' => 'simulador/orcamento-handler.php',
+        'relatorio'         => 'simulador/relatorio.php',
+        // orcamentos
+        'orcamento_admin_handler'  => 'orcamentos/orcamento-admin-handler.php',
+        'orcamento_detalhe'        => 'orcamentos/orcamento-detalhe.php',
+        'orcamento_form'           => 'orcamentos/orcamento-form.php',
+        'orcamento_pdf'            => 'orcamentos/orcamento-pdf.php',
+        'orcamento_status_handler' => 'orcamentos/orcamento-status-handler.php',
+        'orcamentos'               => 'orcamentos/orcamentos.php',
+        // clientes
+        'clientes'         => 'clientes/clientes.php',
+        'clientes_form'    => 'clientes/clientes-form.php',
+        'clientes_handler' => 'clientes/clientes-handler.php',
+        // estoque
+        'movimentacao_estoque'         => 'estoque/movimentacao-estoque.php',
+        'movimentacao_estoque_form'    => 'estoque/movimentacao-estoque-form.php',
+        'movimentacao_estoque_handler' => 'estoque/movimentacao-estoque-handler.php',
+        'placas'                       => 'estoque/placas.php',
+        'produto_form'                 => 'estoque/produto-form.php',
+        'produto_handler'              => 'estoque/produto-handler.php',
+        // usuarios
+        'usuario_form'    => 'usuarios/usuario-form.php',
+        'usuario_handler' => 'usuarios/usuario-handler.php',
+        'usuarios'        => 'usuarios/usuarios.php',
+        // relatorios
+        'exportar'    => 'relatorios/exportar.php',
+        'indicadores' => 'relatorios/indicadores.php',
     ];
 
-    return $routes[$name] ?? '#';
+    return isset($routes[$name]) ? BASE_URL . '/' . $routes[$name] : '#';
 }
 
 /** True when the current script filename matches $needle (e.g. "login.php"). */

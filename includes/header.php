@@ -16,7 +16,7 @@
  * includes/footer.php fecha o que este arquivo abre.
  */
 require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/auth-helpers.php';
+require_once __DIR__ . '/helpers/auth-helpers.php';
 
 $variant   = $variant ?? 'landing';
 $pageTitle = $pageTitle ?? 'EcoVolts';
@@ -39,7 +39,7 @@ require __DIR__ . '/layout/head.php';
         <!-- Imagem de fundo de tela cheia (só em telas grandes), atrás do cartão de login/cadastro -->
         <div class="hidden h-screen overflow-hidden bg-eco-dark -z-10 inset-0 lg:fixed lg:block">
             <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent"></div>
-            <img src="assets/images/auth-banner.jpg" alt="EcoVolts Energia Solar"
+            <img src="<?= asset('images/auth-banner.jpg') ?>" alt="EcoVolts Energia Solar"
                  class="h-full w-full object-cover object-center">
         </div>
         <main class="relative z-10 px-6 pb-12 pt-24 md:px-14 lg:px-16">

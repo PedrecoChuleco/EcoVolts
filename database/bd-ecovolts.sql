@@ -484,8 +484,8 @@ WHERE NOT EXISTS (
     SELECT 1 FROM Usuario WHERE login = 'vendedor.online@ecovolts.com.br'
 );
 
--- CREATE USER 'ecovolts_app'@'localhost' IDENTIFIED BY 'segredo';
--- GRANT SELECT, INSERT, UPDATE, DELETE ON ecovolts.* TO 'ecovolts_app'@'localhost';
--- FLUSH PRIVILEGES;
+CREATE USER 'ecovolts_app'@'localhost' IDENTIFIED BY 'segredo';
+GRANT SELECT, INSERT, UPDATE, DELETE ON ecovolts.* TO 'ecovolts_app'@'localhost';
+FLUSH PRIVILEGES;
 
 -- C:\xampp\php\php.exe database\criar-admin.php admin@admin.com "admin" "admin123" 

@@ -15,10 +15,10 @@ $variant = $variant ?? 'landing';
 <?php endif; ?>
 
 <?php if ($variant === 'landing'): ?>
-    <?php include __DIR__ . '/site-footer.php'; ?>
+    <?php include __DIR__ . '/layout/site-footer.php'; ?>
 <?php endif; ?>
 
-<script src="assets/js/main.js"></script>
+<script src="<?= asset('js/main.js') ?>"></script>
 <script>if (window.lucide) { lucide.createIcons(); }</script>
 </body>
 </html>

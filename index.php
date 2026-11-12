@@ -6,7 +6,7 @@ require __DIR__ . '/includes/header.php';
 
 <main>
     <section class="relative flex flex-col items-center justify-between gap-12 bg-eco-surface bg-bottom py-24 md:flex-row md:py-[88px] md:pb-[76px] h-screen inset">
-        <div class="absolute inset-0 bg-cover bg-bottom" style="background-image: url('assets/images/bg-01.jpg');"></div>
+        <div class="absolute inset-0 bg-cover bg-bottom" style="background-image: url('<?= asset('images/bg-01.jpg') ?>');"></div>
         <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent"></div>
         <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-eco-ink"></div>
 
@@ -68,7 +68,7 @@ require __DIR__ . '/includes/header.php';
             <p class="text-2xl text-eco-muted">Informe o valor da sua conta de energia e receba a quantidade de placas e o investimento estimado.</p>
         </div>
         <div class="hidden overflow-hidden bg-eco-ink lg:block lg:py-10 lg:pl-[5vw]">
-            <img src="assets/images/landing-banner1.jpg" alt="EcoVolts Energia Solar"
+            <img src="<?= asset('images/landing-banner1.jpg') ?>" alt="EcoVolts Energia Solar"
                  class="h-full w-full rounded-2xl border-2 border-eco-amber/75 object-cover object-center">
         </div>
     </section>
@@ -80,7 +80,7 @@ require __DIR__ . '/includes/header.php';
             <p class="text-2xl text-eco-muted">Sabendo o tamanho e a direção do telhado, o cálculo considera a eficiência real de geração.</p>
         </div>
         <div class="hidden overflow-hidden rounded-r-2xl bg-eco-bg lg:block lg:py-[5vw] lg:pl-[10vw] lg:pr-[5vw]">
-            <img src="assets/images/landing-banner2.jpg" alt="EcoVolts Energia Solar"
+            <img src="<?= asset('images/landing-banner2.jpg') ?>" alt="EcoVolts Energia Solar"
                  class="h-full w-full rounded-2xl border-2 border-eco-ink object-cover object-center">
         </div>
     </section>
@@ -92,7 +92,7 @@ require __DIR__ . '/includes/header.php';
             <p class="text-2xl text-eco-muted">Veja em quantos meses o investimento se paga com a economia na conta de energia.</p>
         </div>
         <div class="hidden overflow-hidden lg:block lg:py-10 lg:pl-[5vw]">
-            <img src="assets/images/landing-banner3.jpg" alt="EcoVolts Energia Solar"
+            <img src="<?= asset('images/landing-banner3.jpg') ?>" alt="EcoVolts Energia Solar"
                  class="h-full w-full rounded-2xl border-2 border-eco-amber/75 object-cover object-center">
         </div>
     </section>

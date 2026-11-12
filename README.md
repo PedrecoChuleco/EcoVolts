@@ -1,40 +1,42 @@
-# EcoVolts — módulo de vendedores
+# EcoVolts
 
-Este pacote adiciona contas de Vendedor com acesso de consulta a:
+Sistema de orcamento de energia solar em PHP puro + MySQL/MariaDB, para rodar no XAMPP.
 
-- Placas / Estoque (`placas.php`)
-- Movimentações do estoque (`movimentacao-estoque.php`)
-- Clientes (`clientes.php`)
-- Histórico de orçamentos (`orcamentos.php`)
+## Estrutura
 
-O Administrador também pode abrir cada orçamento e editar cabeçalho, vendedor responsável e itens. Na área de estoque, ele pode criar/editar produtos e quantidade, além de criar, editar e excluir movimentações; cada alteração de movimentação recalcula o saldo do estoque dentro da mesma transação.
+- `index.php` - pagina inicial (landing)
+- `auth/` - login, cadastro e logout
+- `conta/` - menu (dashboard) e perfil do usuario logado
+- `simulador/` - fluxo do cliente: simular orcamento, relatorio e historico
+- `orcamentos/` - area comercial: lista, detalhe, edicao, status e PDF
+- `clientes/` - area comercial: cadastro e consulta de clientes
+- `estoque/` - area comercial: placas/produtos e movimentacoes
+- `usuarios/` - administracao: CRUD de usuarios
+- `relatorios/` - indicadores (dashboards) e exportacao CSV
+- `includes/` - codigo compartilhado (nunca acessado direto pelo navegador):
+  - `config.php` (sessao, `BASE_URL`, `route()`, `asset()`), `db.php`, `db-config.php`, `header.php`, `footer.php`
+  - `layout/` - head, topbar, sidebar, brand, site-footer
+  - `enums/` - RoofDirection, StatusOrcamento, PadraoLigacao
+  - `helpers/` - address-helpers, auth-helpers (`userCan`, CSRF), business-lookups, relatorios, PdfSimples
+  - `guards/` - require-admin, require-permission (protegem paginas por permissao)
+- `assets/` - css, js e imagens
+- `database/` - scripts SQL e `criar-admin.php` (linha de comando)
+- `docs/` - documentacao
 
-## Instalação
+## Rodando no XAMPP
 
-### Banco já existente
-1. Faça backup da base `ecovolts`.
-2. Execute `database/migration-vendedores.sql`.
-3. Substitua os arquivos PHP deste pacote mantendo a estrutura `includes/`.
+1. Coloque a pasta em `C:\xampp\htdocs\ecovolts` e inicie Apache e MySQL.
+2. Importe o banco (phpMyAdmin) e ajuste `includes/db-config.php`.
+3. Abra `http://localhost/ecovolts/`.
 
-### Banco novo
-Use `database/schema.sql` deste pacote no lugar do schema anterior.
+As URLs sao montadas por `BASE_URL`, entao o projeto funciona em qualquer
+subpasta do htdocs ou em um VirtualHost, sem configurar nada.
 
-## Contas de vendedores
+## Como adicionar uma pagina
 
-O cadastro de vendedor continua sendo feito pela área administrativa:
-`Usuários` → `Novo vendedor`.
-
-O cadastro público (`register.php`) não cria contas de vendedor automaticamente; o usuário público continua entrando como Cliente.
-
-## Segurança
-
-As telas comerciais usam permissões do banco:
-`consultar_estoque`, `consultar_movimentacao_estoque`, `consultar_clientes`, `consultar_orcamentos` e `gerenciar_estoque` para o administrador.
-
-A edição do histórico usa `editar_orcamentos` e permanece protegida para Administrador.
-
-O Vendedor não recebe `gerenciar_estoque`. A migração também remove `gerenciar_orcamentos` do perfil Vendedor antigo para deixar a área de orçamentos como consulta.
-
-## Observação
-
-Os nomes `Orcamento`, `Orcamento_Prod`, `Estoque` e `MovimentacaoEstoque` seguem exatamente o schema existente. A tela chamada “Placas / Estoque” usa o arquivo `placas.php`, conforme solicitado.
+1. Crie o arquivo na pasta da area (ex.: `estoque/fornecedores.php`).
+2. Comece com `require __DIR__ . '/../includes/guards/require-permission.php';`
+   (ou `require-admin.php`), definindo antes `$requiredPermission = '...';`.
+3. Registre em `route()` (`includes/config.php`): a chave e o nome do arquivo com `_`.
+4. Link: `<a href="<?= route('fornecedores') ?>">`. Redirect: `header('Location: ' . route('fornecedores'));`
+5. Assets: `<img src="<?= asset('images/logo.png') ?>">`.

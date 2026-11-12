@@ -11,7 +11,7 @@ $email    = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
 if ($email === '' || $password === '') {
-    header('Location: ../login.php?error=' . urlencode('Preencha e-mail e senha.'));
+    header('Location: ' . route('login') . '?error=' . urlencode('Preencha e-mail e senha.'));
     exit;
 }
 
@@ -30,14 +30,14 @@ $user = $stmt->fetch();
 $genericError = 'E-mail ou senha incorretos.';
 
 if (!$user || !password_verify($password, $user['senha'])) {
-    header('Location: ../login.php?error=' . urlencode($genericError));
+    header('Location: ' . route('login') . '?error=' . urlencode($genericError));
     exit;
 }
 
 if ((int) $user['is_system'] === 1 || (int) $user['ativo'] !== 1) {
     // Same generic message — don't reveal that the account exists but is
     // a system/disabled account.
-    header('Location: ../login.php?error=' . urlencode($genericError));
+    header('Location: ' . route('login') . '?error=' . urlencode($genericError));
     exit;
 }
 
@@ -50,5 +50,5 @@ $_SESSION['user'] = [
     'perfil' => $user['nome_perfil'],
 ];
 
-header('Location: ../dashboard.php');
+header('Location: ' . route('dashboard'));
 exit;
