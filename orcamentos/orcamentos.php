@@ -5,10 +5,23 @@ require_once __DIR__ . '/../includes/enums/StatusOrcamento.php';
 
 $db = getDb();
 
+/** Aceita só datas AAAA-MM-DD válidas; qualquer outra coisa vira null. */
+function dataFiltro(?string $data): ?string
+{
+    return ($data !== null && preg_match('/^\d{4}-\d{2}-\d{2}$/', $data) && strtotime($data) !== false) ? $data : null;
+}
+
 $q = trim($_GET['q'] ?? '');
 $clienteFiltro = (int) ($_GET['cliente'] ?? 0);
 $vendedorFiltro = (int) ($_GET['vendedor'] ?? 0);
 $statusFiltro = StatusOrcamento::tryFrom((string) ($_GET['status'] ?? ''));
+$dataInicial = dataFiltro($_GET['data_inicial'] ?? null);
+$dataFinal = dataFiltro($_GET['data_final'] ?? null);
+
+// Período invertido: troca as datas em vez de devolver lista vazia.
+if ($dataInicial && $dataFinal && $dataInicial > $dataFinal) {
+    [$dataInicial, $dataFinal] = [$dataFinal, $dataInicial];
+}
 
 $where = [];
 $params = [];
@@ -29,6 +42,14 @@ if ($vendedorFiltro > 0) {
 if ($statusFiltro) {
     $where[] = 'o.status = :status';
     $params['status'] = $statusFiltro->value;
+}
+if ($dataInicial) {
+    $where[] = 'o.data_emissao >= :data_inicial';
+    $params['data_inicial'] = $dataInicial;
+}
+if ($dataFinal) {
+    $where[] = 'o.data_emissao <= :data_final';
+    $params['data_final'] = $dataFinal;
 }
 
 $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -65,6 +86,13 @@ $vendedores = $db->query(
      ORDER BY u.is_system DESC, u.nome_usuario"
 )->fetchAll();
 
+// Quantos filtros (do menu) estão ativos — aparece como contador no botão.
+$filtrosAtivos = (int) ($statusFiltro !== null)
+    + (int) ($clienteFiltro > 0)
+    + (int) ($vendedorFiltro > 0)
+    + (int) ($dataInicial !== null)
+    + (int) ($dataFinal !== null);
+
 $variant = 'account';
 $wide = true;
 $pageTitle = 'EcoVolts - Orçamentos';
@@ -72,8 +100,10 @@ require __DIR__ . '/../includes/header.php';
 
 $classeCampo = 'w-full rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5 text-[14px] outline-none focus-visible:border-eco-green';
 $filtrosExportacao = http_build_query(array_filter([
-    'cliente'  => $clienteFiltro ?: null,
-    'vendedor' => $vendedorFiltro ?: null,
+    'cliente'      => $clienteFiltro ?: null,
+    'vendedor'     => $vendedorFiltro ?: null,
+    'data_inicial' => $dataInicial,
+    'data_final'   => $dataFinal,
 ]));
 ?>
 
@@ -102,52 +132,93 @@ $filtrosExportacao = http_build_query(array_filter([
     </div>
 </div>
 
-<form method="get" class="mb-5 grid grid-cols-1 gap-3 rounded-[10px] border border-eco-line bg-white p-4 md:grid-cols-4">
-    <div class="md:col-span-2">
-        <label for="q" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Busca</label>
-        <input id="q" type="search" name="q" value="<?= htmlspecialchars($q) ?>"
-               placeholder="Nº do orçamento, nome ou e-mail do cliente"
-               class="<?= $classeCampo ?>">
-    </div>
-    <div>
-        <label for="status" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Status</label>
-        <select id="status" name="status" class="<?= $classeCampo ?>">
-            <option value="">Todos</option>
-            <?php foreach (StatusOrcamento::cases() as $opcao): ?>
-                <option value="<?= htmlspecialchars($opcao->value) ?>" <?= $statusFiltro === $opcao ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($opcao->label()) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div>
-        <label for="cliente" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Cliente</label>
-        <select id="cliente" name="cliente" class="<?= $classeCampo ?>">
-            <option value="0">Todos</option>
-            <?php foreach ($clientes as $cliente): ?>
-                <option value="<?= (int) $cliente['id_usuario'] ?>" <?= $clienteFiltro === (int) $cliente['id_usuario'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($cliente['nome_usuario']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div>
-        <label for="vendedor" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Vendedor</label>
-        <select id="vendedor" name="vendedor" class="<?= $classeCampo ?>">
-            <option value="0">Todos</option>
-            <?php foreach ($vendedores as $vendedor): ?>
-                <option value="<?= (int) $vendedor['id_usuario'] ?>" <?= $vendedorFiltro === (int) $vendedor['id_usuario'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($vendedor['nome_usuario']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div class="md:col-span-full flex items-center gap-3">
-        <button type="submit" class="rounded-md bg-eco-ink px-[18px] py-2.5 text-[14.5px] font-semibold text-white hover:bg-eco-dark">Filtrar</button>
-        <?php if ($q !== '' || $clienteFiltro || $vendedorFiltro || $statusFiltro): ?>
-            <a href="<?= route('orcamentos') ?>" class="text-[14px] text-eco-muted hover:text-eco-ink">Limpar filtros</a>
-        <?php endif; ?>
-    </div>
+<form method="get" class="mb-5 flex flex-wrap items-center gap-3">
+    <input type="search" name="q" value="<?= htmlspecialchars($q) ?>"
+        placeholder="Buscar por nº do orçamento, nome ou e-mail do cliente"
+        class="min-w-[260px] flex-1 rounded-md border border-eco-line bg-[#FBFDFC] px-3 py-2.5 text-[14.5px] outline-none focus-visible:border-eco-green">
+
+    <!-- Menu de filtros (dropdown) -->
+    <details id="menu-filtros" class="relative">
+        <summary
+            class="inline-flex cursor-pointer list-none items-center gap-2 rounded-md border bg-white px-3.5 py-2.5 text-[14.5px] font-semibold text-eco-green hover:border-eco-green [&::-webkit-details-marker]:hidden <?= $filtrosAtivos ? 'border-eco-green' : 'border-eco-line' ?>"
+            aria-label="Filtros">
+            <i data-lucide="funnel" width="17" height="17"></i>
+            Filtros
+            <?php if ($filtrosAtivos): ?>
+                <span class="inline-flex size-5 items-center justify-center rounded-full bg-eco-amber text-[12px] font-bold text-eco-ink"><?= $filtrosAtivos ?></span>
+            <?php endif; ?>
+        </summary>
+
+        <div class="absolute right-0 top-full z-30 mt-2 w-[min(340px,calc(100vw-44px))] rounded-[10px] border border-eco-line bg-white p-4 shadow-lg">
+            <div class="flex flex-col gap-3.5">
+                <div>
+                    <label for="status" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Status</label>
+                    <select id="status" name="status" class="<?= $classeCampo ?>">
+                        <option value="">Todos</option>
+                        <?php foreach (StatusOrcamento::cases() as $opcao): ?>
+                            <option value="<?= htmlspecialchars($opcao->value) ?>" <?= $statusFiltro === $opcao ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($opcao->label()) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="cliente" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Cliente</label>
+                    <select id="cliente" name="cliente" class="<?= $classeCampo ?>">
+                        <option value="0">Todos</option>
+                        <?php foreach ($clientes as $cliente): ?>
+                            <option value="<?= (int) $cliente['id_usuario'] ?>" <?= $clienteFiltro === (int) $cliente['id_usuario'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($cliente['nome_usuario']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="vendedor" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Vendedor</label>
+                    <select id="vendedor" name="vendedor" class="<?= $classeCampo ?>">
+                        <option value="0">Todos</option>
+                        <?php foreach ($vendedores as $vendedor): ?>
+                            <option value="<?= (int) $vendedor['id_usuario'] ?>" <?= $vendedorFiltro === (int) $vendedor['id_usuario'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($vendedor['nome_usuario']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="data_inicial" class="mb-1.5 block text-[13px] font-medium text-eco-muted">Emitidos a partir de</label>
+                        <input id="data_inicial" type="date" name="data_inicial"
+                               value="<?= htmlspecialchars((string) $dataInicial) ?>" class="<?= $classeCampo ?>">
+                    </div>
+                    <div>
+                        <label for="data_final" class="mb-1.5 block text-[13px] font-medium text-eco-muted">até</label>
+                        <input id="data_final" type="date" name="data_final"
+                               value="<?= htmlspecialchars((string) $dataFinal) ?>" class="<?= $classeCampo ?>">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-3 border-t border-eco-line pt-3.5">
+                    <?php if ($filtrosAtivos): ?>
+                        <a href="<?= route('orcamentos') ?><?= $q !== '' ? '?q=' . urlencode($q) : '' ?>"
+                           class="text-[14px] text-eco-muted hover:text-eco-ink">Limpar filtros</a>
+                    <?php else: ?>
+                        <span></span>
+                    <?php endif; ?>
+                    <button type="submit" class="rounded-md bg-eco-amber px-[18px] py-2.5 text-[14.5px] font-semibold text-eco-ink hover:bg-eco-amber/75">
+                        Aplicar filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <button type="submit" class="rounded-md bg-eco-ink px-[18px] py-2.5 text-[14.5px] font-semibold text-white hover:bg-eco-dark">Buscar</button>
+    <?php if ($q !== '' || $filtrosAtivos): ?>
+        <a href="<?= route('orcamentos') ?>" class="text-[14px] text-eco-muted hover:text-eco-ink">Limpar</a>
+    <?php endif; ?>
 </form>
 
 <?php if (empty($orcamentos)): ?>
@@ -174,7 +245,7 @@ $filtrosExportacao = http_build_query(array_filter([
                 <tr class="<?= $i % 2 === 0 ? 'bg-white' : 'bg-eco-surface/60' ?> border-t border-eco-line align-middle">
                     <td class="px-4 py-3.5">
                         <div class="font-medium"><?= htmlspecialchars($orcamento['num_orcamento']) ?></div>
-                        <div class="text-[12.5px] text-eco-muted"><?= (int) $orcamento['qtd_itens'] ?> item<?= (int) $orcamento['qtd_itens'] === 1 ? '' : 'ns' ?></div>
+                        <div class="text-[12.5px] text-eco-muted"><?= (int) $orcamento['qtd_itens'] ?> <?= (int) $orcamento['qtd_itens'] === 1 ? 'item' : 'itens' ?></div>
                     </td>
                     <td class="px-4 py-3.5">
                         <div class="font-medium"><?= htmlspecialchars($orcamento['cliente_nome']) ?></div>
@@ -208,5 +279,20 @@ $filtrosExportacao = http_build_query(array_filter([
         <?= count($orcamentos) ?> orçamento<?= count($orcamentos) === 1 ? '' : 's' ?> encontrado<?= count($orcamentos) === 1 ? '' : 's' ?>.
     </div>
 <?php endif; ?>
+
+<script>
+    // Fecha o menu de filtros ao clicar fora dele ou ao apertar Esc.
+    (function () {
+        var menu = document.getElementById('menu-filtros');
+        if (!menu) return;
+
+        document.addEventListener('click', function (e) {
+            if (menu.open && !menu.contains(e.target)) menu.open = false;
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') menu.open = false;
+        });
+    })();
+</script>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>

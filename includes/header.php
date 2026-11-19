@@ -26,7 +26,7 @@ require __DIR__ . '/layout/head.php';
 ?>
 
 <?php if ($variant === 'account'): ?>
-<div class="grid min-h-screen grid-cols-1 md:grid-cols-[248px_1fr]">
+<div class="grid min-h-screen grid-cols-1 md:grid-cols-[248px_minmax(0,1fr)]">
     <?php require __DIR__ . '/layout/sidebar.php'; ?>
     <main class="<?= $wide
         ? 'max-w-[1180px] px-[22px] py-[34px] pb-[60px] md:px-10 md:py-12 md:pb-20'

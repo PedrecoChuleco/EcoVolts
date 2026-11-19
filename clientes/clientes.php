@@ -58,12 +58,12 @@ require __DIR__ . '/../includes/header.php';
     <div>
         <h1 class="font-serif text-[34px] font-medium">Clientes</h1>
         <p class="mt-1 text-sm text-eco-muted">Consulta cadastral e histórico de orçamentos por cliente.</p>
-       
+
     </div>
     <div> <a href="<?= route('exportar') ?>?tipo=clientes<?= $q !== '' ? '&q=' . urlencode($q) : '' ?>"
-   class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-eco-line bg-white px-[18px] py-2.5 text-[14.5px] font-semibold text-eco-green hover:border-eco-green">
-    <i data-lucide="file-spreadsheet" width="16" height="16"></i> Exportar planilha
-</a></div>
+            class="inline-flex items-center gap-1.5 rounded-md border border-eco-line bg-white px-[18px] py-2.5 text-[14.5px] font-semibold text-eco-green hover:border-eco-green">
+            <i data-lucide="file-spreadsheet" width="16" height="16"></i> Exportar planilha
+        </a></div>
 </div>
 
 <?php if ($flashOk): ?>
@@ -99,7 +99,7 @@ require __DIR__ . '/../includes/header.php';
             <thead>
                 <tr class="bg-eco-surface text-eco-muted">
                     <th class="px-4 py-3.5 font-medium">Cliente</th>
-                    <th class="px-4 py-3.5 font-medium">Contato</th>
+                    <th class="hidden px-3 py-3.5 font-medium xl:table-cell">Contato</th>
                     <th class="px-4 py-3.5 font-medium">Documento</th>
                     <th class="px-4 py-3.5 font-medium">Último orçamento</th>
                     <th class="px-4 py-3.5 text-right font-medium">Histórico</th>
@@ -114,7 +114,7 @@ require __DIR__ . '/../includes/header.php';
                             <div class="font-medium"><?= htmlspecialchars($cliente['nome_usuario']) ?></div>
                             <div class="text-[12.5px] text-eco-muted"><?= htmlspecialchars($cliente['login']) ?></div>
                         </td>
-                        <td class="px-4 py-3.5"><?= htmlspecialchars($cliente['email_usuario'] ?: '—') ?></td>
+                        <td class="hidden px-3 py-3.5 xl:table-cell"><?= htmlspecialchars($cliente['email_usuario'] ?: '—') ?></td>
                         <td class="px-4 py-3.5"><?= $doc ? htmlspecialchars($doc) : '—' ?></td>
                         <td class="px-4 py-3.5">
                             <?php if ($cliente['ultimo_orcamento']): ?>
@@ -135,13 +135,13 @@ require __DIR__ . '/../includes/header.php';
                             <?php endif; ?>
                         </td>
                         <td class="px-4 py-3.5 text-right">
-                            <div class="flex flex-wrap items-center justify-end gap-3">
+                            <div class="flex items-center justify-end gap-3">
                                 <?php if ((int) $cliente['ativo'] !== 1): ?>
                                     <span class="text-eco-muted">Cliente inativo</span>
                                 <?php elseif ($podeCriarOrcamento): ?>
-                                    <a href="<?= route('orcamento') ?>?cliente=<?= (int) $cliente['id_usuario'] ?>"
-                                        class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-eco-amber px-3.5 py-2 text-[13.5px] font-semibold text-eco-ink hover:bg-eco-amber/75">
-                                        <i data-lucide="plus" width="16" height="16"></i> Criar orçamento
+                                    <a href="..." class="inline-flex items-center gap-1.5 rounded-md bg-eco-amber px-3 py-2 text-[13.5px] font-semibold text-eco-ink hover:bg-eco-amber/75">
+                                        <i data-lucide="plus" width="16" height="16"></i>
+                                        <span class="hidden lg:inline">Criar </span>orçamento
                                     </a>
                                 <?php endif; ?>
                                 <?php if ($podeEditar): ?>
